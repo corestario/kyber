@@ -252,6 +252,14 @@ func NewDistKeyGenerator(suite Suite, longterm kyber.Scalar, participants []kybe
 	return NewDistKeyHandler(c)
 }
 
+func (d *DistKeyGenerator) GetConfig() *Config {
+	return d.c
+}
+
+func (d *DistKeyGenerator) GetDealer() *vss.Dealer {
+	return d.dealer
+}
+
 // Deals returns all the deals that must be broadcasted to all participants in
 // the new list. The deal corresponding to this DKG is already added to this DKG
 // and is ommitted from the returned map. To know which participant a deal

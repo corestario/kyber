@@ -353,7 +353,7 @@ func NewVerifier(suite Suite, longterm kyber.Scalar, dealerKey kyber.Point,
 // If the deal has already been received, or the signature generation of the
 // response failed, it returns an error without any responses.
 func (v *Verifier) ProcessEncryptedDeal(e *EncryptedDeal) (*Response, error) {
-	d, err := v.decryptDeal(e)
+	d, err := v.DecryptDeal(e)
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +391,7 @@ func (v *Verifier) ProcessEncryptedDeal(e *EncryptedDeal) (*Response, error) {
 	return r, nil
 }
 
-func (v *Verifier) decryptDeal(e *EncryptedDeal) (*Deal, error) {
+func (v *Verifier) DecryptDeal(e *EncryptedDeal) (*Deal, error) {
 	// verify signature
 	if err := schnorr.Verify(v.suite, v.dealer, e.DHKey, e.Signature); err != nil {
 		return nil, err

@@ -1,9 +1,10 @@
 package dkg
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/binary"
-
+	"encoding/json"
 	"go.dedis.ch/kyber/v3"
 	"go.dedis.ch/kyber/v3/share"
 	vss "go.dedis.ch/kyber/v3/share/vss/pedersen"
@@ -56,6 +57,18 @@ func (d *Deal) MarshalBinary() ([]byte, error) {
 	binary.Write(&b, binary.LittleEndian, d.Index)
 	b.Write(d.Deal.Cipher)
 	return b.Bytes(), nil
+}
+
+func (d *Deal) Encode() ([]byte, error) {
+	return json.Marshal(d)
+}
+
+func (d *Deal) Decode(data []byte) error {
+	if err := json.Unmarshal(data, d); err != nil {
+		return fmt.Errorf("failed to decode deal: %w", err)
+	}
+
+	return nil
 }
 
 // Response holds the Response from another participant as well as the index of
