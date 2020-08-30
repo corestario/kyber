@@ -6,10 +6,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/group/edwards25519"
-	"go.dedis.ch/kyber/v3/sign/schnorr"
-	"go.dedis.ch/kyber/v3/xof/blake2xb"
+	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber/v3/group/edwards25519"
+	"github.com/corestario/kyber/v3/sign/schnorr"
+	"github.com/corestario/kyber/v3/xof/blake2xb"
 	"go.dedis.ch/protobuf"
 )
 
@@ -180,7 +180,7 @@ func TestVSSVerifierDecryptDeal(t *testing.T) {
 	// all fine
 	encD, err := dealer.EncryptedDeal(0)
 	require.Nil(t, err)
-	decD, err := v.decryptDeal(encD)
+	decD, err := v.DecryptDeal(encD)
 	require.Nil(t, err)
 	b1, _ := protobuf.Encode(d)
 	b2, _ := protobuf.Encode(decD)
@@ -190,7 +190,7 @@ func TestVSSVerifierDecryptDeal(t *testing.T) {
 	goodDh := encD.DHKey
 	encD.DHKey, err = suite.Point().Null().MarshalBinary()
 	require.Nil(t, err)
-	decD, err = v.decryptDeal(encD)
+	decD, err = v.DecryptDeal(encD)
 	assert.Error(t, err)
 	assert.Nil(t, decD)
 	encD.DHKey = goodDh
@@ -198,7 +198,7 @@ func TestVSSVerifierDecryptDeal(t *testing.T) {
 	// wrong signature
 	goodSig := encD.Signature
 	encD.Signature = randomBytes(32)
-	decD, err = v.decryptDeal(encD)
+	decD, err = v.DecryptDeal(encD)
 	assert.Error(t, err)
 	assert.Nil(t, decD)
 	encD.Signature = goodSig
@@ -206,7 +206,7 @@ func TestVSSVerifierDecryptDeal(t *testing.T) {
 	// wrong ciphertext
 	goodCipher := encD.Cipher
 	encD.Cipher = randomBytes(len(goodCipher))
-	decD, err = v.decryptDeal(encD)
+	decD, err = v.DecryptDeal(encD)
 	assert.Error(t, err)
 	assert.Nil(t, decD)
 	encD.Cipher = goodCipher

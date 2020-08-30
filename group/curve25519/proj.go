@@ -5,9 +5,9 @@ import (
 	"io"
 	"math/big"
 
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/group/internal/marshalling"
-	"go.dedis.ch/kyber/v3/group/mod"
+	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber/v3/group/internal/marshalling"
+	"github.com/corestario/kyber/v3/group/mod"
 )
 
 type projPoint struct {

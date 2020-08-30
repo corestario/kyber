@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/pairing"
-	"go.dedis.ch/kyber/v3/util/key"
+	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber/v3/pairing"
+	"github.com/corestario/kyber/v3/util/key"
 )
 
 const n = 17

@@ -1,4 +1,4 @@
-[![Docs](https://img.shields.io/badge/docs-current-brightgreen.svg)](https://godoc.org/go.dedis.ch/kyber)
+[![Docs](https://img.shields.io/badge/docs-current-brightgreen.svg)](https://godoc.org/github.com/corestario/kyber)
 [![Build Status](https://travis-ci.org/dedis/kyber.svg?branch=master)](https://travis-ci.org/dedis/kyber)
 
 DEDIS Advanced Crypto Library for Go
@@ -8,13 +8,13 @@ This package provides a toolbox of advanced cryptographic primitives for Go,
 targeting applications like [Cothority](https://go.dedis.ch/cothority)
 that need more than straightforward signing and encryption.
 Please see the
-[Godoc documentation for this package](https://godoc.org/go.dedis.ch/kyber)
+[Godoc documentation for this package](https://godoc.org/github.com/corestario/kyber)
 for details on the library's purpose and API functionality.
 
 This package includes a mix of variable time and constant time
 implementations. If your application is sensitive to timing-based attacks
 and you need to constrain Kyber to offering only constant time implementations,
-you should use the [suites.RequireConstantTime()](https://godoc.org/go.dedis.ch/kyber/suites#RequireConstantTime)
+you should use the [suites.RequireConstantTime()](https://godoc.org/github.com/corestario/kyber/suites#RequireConstantTime)
 function in the `init()` function of your `main` package.
 
 Versioning - Development
@@ -41,7 +41,7 @@ The basic crypto library requires only Go and a few
 third-party Go-language dependencies that can be installed automatically
 as follows:
 
-	go get go.dedis.ch/kyber
+	go get github.com/corestario/kyber
 
 You can recursively test all the packages in the library as follows:
 

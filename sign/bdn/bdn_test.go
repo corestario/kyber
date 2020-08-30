@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/pairing"
-	"go.dedis.ch/kyber/v3/pairing/bn256"
-	"go.dedis.ch/kyber/v3/sign"
-	"go.dedis.ch/kyber/v3/sign/bls"
-	"go.dedis.ch/kyber/v3/util/random"
+	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber/v3/pairing"
+	"github.com/corestario/kyber/v3/pairing/bn256"
+	"github.com/corestario/kyber/v3/sign"
+	"github.com/corestario/kyber/v3/sign/bls"
+	"github.com/corestario/kyber/v3/util/random"
 )
 
 var suite = pairing.NewSuiteBn256()
