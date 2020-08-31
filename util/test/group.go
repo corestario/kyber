@@ -1,8 +1,8 @@
 package test
 
 import (
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/util/random"
 )
 
 // GroupBench is a generic benchmark suite for kyber.groups.

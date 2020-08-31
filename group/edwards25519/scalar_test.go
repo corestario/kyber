@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/util/random"
 )
 
 // SimpleCTScalar implements the scalar operations only using `ScMulAdd` by

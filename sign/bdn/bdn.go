@@ -14,11 +14,11 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/mod"
-	"github.com/corestario/kyber/v3/pairing"
-	"github.com/corestario/kyber/v3/sign"
-	"github.com/corestario/kyber/v3/sign/bls"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/mod"
+	"github.com/corestario/kyber/pairing"
+	"github.com/corestario/kyber/sign"
+	"github.com/corestario/kyber/sign/bls"
 	"golang.org/x/crypto/blake2s"
 )
 

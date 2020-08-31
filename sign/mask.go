@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/pairing"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/pairing"
 )
 
 // Mask is a bitmask of the participation to a collective signature.

@@ -43,7 +43,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Commit returns a random scalar v, generated from the given suite,

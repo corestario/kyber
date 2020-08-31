@@ -1,10 +1,10 @@
 package suites
 
 import (
-	"github.com/corestario/kyber/v3/group/edwards25519"
-	"github.com/corestario/kyber/v3/group/nist"
-	"github.com/corestario/kyber/v3/pairing"
-	"github.com/corestario/kyber/v3/pairing/bn256"
+	"github.com/corestario/kyber/group/edwards25519"
+	"github.com/corestario/kyber/group/nist"
+	"github.com/corestario/kyber/pairing"
+	"github.com/corestario/kyber/pairing/bn256"
 )
 
 func init() {

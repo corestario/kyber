@@ -15,12 +15,12 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/util/random"
 
-	"github.com/corestario/kyber/v3/share"
-	vss "github.com/corestario/kyber/v3/share/vss/pedersen"
-	"github.com/corestario/kyber/v3/sign/schnorr"
+	"github.com/corestario/kyber/share"
+	vss "github.com/corestario/kyber/share/vss/pedersen"
+	"github.com/corestario/kyber/sign/schnorr"
 )
 
 // Suite wraps the functionalities needed by the dkg package

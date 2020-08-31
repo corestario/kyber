@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/share"
-	vss "github.com/corestario/kyber/v3/share/vss/pedersen"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/share"
+	vss "github.com/corestario/kyber/share/vss/pedersen"
 )
 
 // DistKeyShare holds the share of a distributed key for a participant.

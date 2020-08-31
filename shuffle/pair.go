@@ -24,9 +24,9 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/proof"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/proof"
+	"github.com/corestario/kyber/util/random"
 )
 
 // Suite wraps the functionalities needed by the shuffle/ package. These are the

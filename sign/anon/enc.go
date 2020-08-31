@@ -4,8 +4,8 @@ import (
 	"crypto/subtle"
 	"errors"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/util/key"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/util/key"
 )
 
 func header(suite Suite, X kyber.Point, x kyber.Scalar,

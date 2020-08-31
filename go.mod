@@ -1,4 +1,4 @@
-module github.com/corestario/kyber/v3
+module github.com/corestario/kyber
 
 require (
 	github.com/stretchr/testify v1.3.0

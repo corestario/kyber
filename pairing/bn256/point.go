@@ -8,8 +8,8 @@ import (
 	"io"
 	"math/big"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/mod"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/mod"
 )
 
 var marshalPointID1 = [8]byte{'b', 'n', '2', '5', '6', '.', 'g', '1'}

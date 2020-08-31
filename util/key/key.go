@@ -4,7 +4,7 @@ package key
 import (
 	"crypto/cipher"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Generator is a type that needs to implement a special case in order

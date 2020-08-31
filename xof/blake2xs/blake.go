@@ -3,7 +3,7 @@
 package blake2xs
 
 import (
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 	"golang.org/x/crypto/blake2s"
 )
 

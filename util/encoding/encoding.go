@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // ReadHexPoint reads a point from r in hex representation.

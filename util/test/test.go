@@ -5,9 +5,9 @@ import (
 	"crypto/cipher"
 	"testing"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/util/key"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/util/key"
+	"github.com/corestario/kyber/util/random"
 )
 
 // Suite represents the functionalities that this package can test

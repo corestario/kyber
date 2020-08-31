@@ -36,9 +36,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/share"
-	"github.com/corestario/kyber/v3/sign/schnorr"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/share"
+	"github.com/corestario/kyber/sign/schnorr"
 	"go.dedis.ch/protobuf"
 )
 

@@ -20,8 +20,8 @@ import (
 	"errors"
 	"io"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/internal/marshalling"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/internal/marshalling"
 )
 
 var marshalPointID = [8]byte{'e', 'd', '.', 'p', 'o', 'i', 'n', 't'}

@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/edwards25519"
-	"github.com/corestario/kyber/v3/util/random"
-	"github.com/corestario/kyber/v3/xof/blake2xb"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/edwards25519"
+	"github.com/corestario/kyber/util/random"
+	"github.com/corestario/kyber/xof/blake2xb"
 )
 
 // This example demonstrates signing and signature verification

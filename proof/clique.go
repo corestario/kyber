@@ -10,7 +10,7 @@ package proof
 // assumes that nodes are always "live" and never go offline,
 // but we can achieve availability via threshold kyber.
 
-import "github.com/corestario/kyber/v3"
+import "github.com/corestario/kyber"
 
 // Protocol represents the role of a participant in a clique protocol.
 // A participant is represented as a higher-order function taking a StarContext,

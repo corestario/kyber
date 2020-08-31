@@ -18,7 +18,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Some error definitions

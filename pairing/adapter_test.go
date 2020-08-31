@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/corestario/kyber/v3/util/key"
+	"github.com/corestario/kyber/util/key"
 )
 
 func TestAdapter_SuiteBn256(t *testing.T) {

@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/mod"
-	"github.com/corestario/kyber/v3/util/random"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/mod"
+	"github.com/corestario/kyber/util/random"
 	"go.dedis.ch/protobuf"
 	"golang.org/x/crypto/bn256"
 )

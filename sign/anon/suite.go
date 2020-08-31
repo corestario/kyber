@@ -1,7 +1,7 @@
 package anon
 
 import (
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Suite represents the set of functionalities needed by the package anon.

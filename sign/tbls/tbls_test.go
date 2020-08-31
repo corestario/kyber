@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/corestario/kyber/v3/pairing/bn256"
-	"github.com/corestario/kyber/v3/share"
-	"github.com/corestario/kyber/v3/sign/bls"
+	"github.com/corestario/kyber/pairing/bn256"
+	"github.com/corestario/kyber/share"
+	"github.com/corestario/kyber/sign/bls"
 )
 
 func TestTBLS(test *testing.T) {

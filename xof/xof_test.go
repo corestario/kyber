@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/xof/blake2xb"
-	"github.com/corestario/kyber/v3/xof/keccak"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/xof/blake2xb"
+	"github.com/corestario/kyber/xof/keccak"
 )
 
 type blakeF struct{}

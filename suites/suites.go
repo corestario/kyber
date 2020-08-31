@@ -8,7 +8,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Suite is the sum of all suites mix-ins in Kyber.

@@ -8,7 +8,7 @@ package proof
 import (
 	"errors"
 
-	"github.com/corestario/kyber/v3"
+	"github.com/corestario/kyber"
 )
 
 // Suite defines the functionalities needed for this package to operate

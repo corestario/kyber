@@ -8,10 +8,10 @@ import (
 	"reflect"
 
 	"go.dedis.ch/fixbuf"
-	"github.com/corestario/kyber/v3"
-	"github.com/corestario/kyber/v3/group/internal/marshalling"
-	"github.com/corestario/kyber/v3/util/random"
-	"github.com/corestario/kyber/v3/xof/blake2xb"
+	"github.com/corestario/kyber"
+	"github.com/corestario/kyber/group/internal/marshalling"
+	"github.com/corestario/kyber/util/random"
+	"github.com/corestario/kyber/xof/blake2xb"
 )
 
 // Suite128 is the suite for P256 curve
@@ -49,7 +49,7 @@ func (s *Suite128) New(t reflect.Type) interface{} {
 }
 
 // NewBlakeSHA256P256 returns a cipher suite based on package
-// github.com/corestario/kyber/v3/xof/blake2xb, SHA-256, and the NIST P-256
+// github.com/corestario/kyber/xof/blake2xb, SHA-256, and the NIST P-256
 // elliptic curve. It returns random streams from Go's crypto/rand.
 //
 // The scalars created by this group implement kyber.Scalar's SetBytes
