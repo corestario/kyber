@@ -93,6 +93,8 @@ type Config struct {
 	UserReaderOnly bool
 }
 
+type Verifiers map[uint32]*vss.Verifier
+
 // DistKeyGenerator is the struct that runs the DKG protocol.
 type DistKeyGenerator struct {
 	// config driving the behavior of DistKeyGenerator
@@ -786,7 +788,7 @@ func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 	}, nil
 }
 
-// Verifiers returns the VerifiersMap keeping state of each deals
+// verifiers returns the VerifiersMap keeping state of each deals
 func (d *DistKeyGenerator) Verifiers() map[uint32]*vss.Verifier {
 	return d.VerifiersMap
 }

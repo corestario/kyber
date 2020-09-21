@@ -128,7 +128,7 @@ type Justification struct {
 }
 
 // NewDealer returns a dealer capable of leading the secret sharing scheme. It
-// does not have to be trusted by other Verifiers. The security parameter t is
+// does not have to be trusted by other verifiers. The security parameter t is
 // the number of shares required to reconstruct the secret. It is HIGHLY
 // RECOMMENDED to use a threshold higher or equal than what the method
 // MinimumT() returns, otherwise it breaks the security assumptions of the whole
@@ -307,14 +307,14 @@ func (d *Dealer) SessionID() []byte {
 }
 
 // SetTimeout tells this dealer to consider this moment the maximum time limit.
-// it calls cleanVerifiers which will take care of all Verifiers who have not
+// it calls cleanVerifiers which will take care of all verifiers who have not
 // responded until now.
 func (d *Dealer) SetTimeout() {
 	d.aggregator.cleanVerifiers()
 }
 
 // Verifier receives a Deal from a dealer, can reply with a Complaint, and can
-// collaborate with other Verifiers to reconstruct a secret.
+// collaborate with other verifiers to reconstruct a secret.
 type Verifier struct {
 	suite       Suite
 	longterm    kyber.Scalar
@@ -499,7 +499,7 @@ func RecoverSecret(suite Suite, deals []*Deal, n, t int) (kyber.Scalar, error) {
 }
 
 // SetTimeout tells this verifier to consider this moment the maximum time limit.
-// it calls cleanVerifiers which will take care of all Verifiers who have not
+// it calls cleanVerifiers which will take care of all verifiers who have not
 // responded until now.
 func (v *Verifier) SetTimeout() {
 	v.aggregator.cleanVerifiers()

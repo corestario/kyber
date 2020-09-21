@@ -131,7 +131,7 @@ func TestVSSShare(t *testing.T) {
 
 	aggr.ResponsesMap[uint32(aggr.T)] = &Response{Status: StatusApproval}
 
-	// Timeout all other (i>T) Verifiers
+	// Timeout all other (i>T) verifiers
 	ver.SetTimeout()
 
 	// AggregatedDeal not certified
@@ -151,7 +151,7 @@ func TestVSSAggregatorDealCertified(t *testing.T) {
 		aggr.ResponsesMap[uint32(i)] = &Response{Status: StatusApproval}
 	}
 
-	// Mark remaining Verifiers as timed-out
+	// Mark remaining verifiers as timed-out
 	dealer.SetTimeout()
 
 	assert.True(t, aggr.DealCertified())
@@ -427,7 +427,7 @@ func TestVSSDealerTimeout(t *testing.T) {
 	}
 	require.False(t, aggr.DealCertified())
 
-	// Tell Dealer to consider other Verifiers timed-out
+	// Tell Dealer to consider other verifiers timed-out
 	dealer.SetTimeout()
 
 	// Deal should be certified
@@ -457,7 +457,7 @@ func TestVSSVerifierTimeout(t *testing.T) {
 	assert.False(t, aggr.DealCertified())
 
 	// Trigger time out, thus adding StatusComplaint to all
-	// remaining Verifiers
+	// remaining verifiers
 	v.SetTimeout()
 
 	// Deal must be certified now

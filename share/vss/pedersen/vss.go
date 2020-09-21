@@ -9,6 +9,7 @@ import (
 	"crypto/cipher"
 	"encoding"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -29,10 +30,10 @@ type Suite interface {
 
 	// This is kyber.Group, but without the marshalling part.
 	String() string
-	ScalarLen() int // Max length of scalars in bytes
+	ScalarLen() int       // Max length of scalars in bytes
 	Scalar() kyber.Scalar // Create new scalar
-	PointLen() int // Max length of point in bytes
-	Point() kyber.Point  // Create new point
+	PointLen() int        // Max length of point in bytes
+	Point() kyber.Point   // Create new point
 }
 
 // Dealer encapsulates for creating and distributing the shares and for
@@ -84,7 +85,7 @@ type EncryptedDeal struct {
 	Cipher []byte
 }
 
-// Response is sent by the Verifiers to all participants and holds each
+// Response is sent by the verifiers to all participants and holds each
 // individual validation or refusal of a Deal.
 type Response struct {
 	// SessionID related to this run of the protocol
@@ -121,7 +122,7 @@ type Justification struct {
 }
 
 // NewDealer returns a Dealer capable of leading the Secret sharing scheme. It
-// does not have to be trusted by other Verifiers. The security parameter T is
+// does not have to be trusted by other verifiers. The security parameter T is
 // the number of shares required to reconstruct the Secret. It is HIGHLY
 // RECOMMENDED to use a threshold higher or equal than what the method
 // MinimumT() returns, otherwise it breaks the security assumptions of the whole
@@ -222,7 +223,7 @@ func (d *Dealer) EncryptedDeal(i int) (*EncryptedDeal, error) {
 
 // EncryptedDeals calls `EncryptedDeal` for each IndexField of the verifier and
 // returns the list of encrypted Deals. Each IndexField in the returned slice
-// corresponds to the IndexField in the list of Verifiers.
+// corresponds to the IndexField in the list of verifiers.
 func (d *Dealer) EncryptedDeals() ([]*EncryptedDeal, error) {
 	deals := make([]*EncryptedDeal, len(d.Verifiers))
 	var err error
@@ -238,7 +239,7 @@ func (d *Dealer) EncryptedDeals() ([]*EncryptedDeal, error) {
 // ProcessResponse analyzes the given Response. If it's a valid complaint, then
 // it returns a Justification. This Justification must be broadcasted to every
 // participants. If it's an invalid complaint, it returns an error about the
-// complaint. The Verifiers will also ignore an invalid Complaint.
+// complaint. The verifiers will also ignore an invalid Complaint.
 func (d *Dealer) ProcessResponse(r *Response) (*Justification, error) {
 	if err := d.verifyResponse(r); err != nil {
 		return nil, err
@@ -304,22 +305,50 @@ func (d *Dealer) PrivatePoly() *share.PriPoly {
 }
 
 // Verifier receives a Deal from a Dealer, can reply with a Complaint, and can
-// collaborate with other Verifiers to reconstruct a Secret.
+// collaborate with other verifiers to reconstruct a Secret.
 type Verifier struct {
 	Suite       Suite
 	Longterm    kyber.Scalar
 	Pub         kyber.Point
 	Dealer      kyber.Point
 	IndexField  int
-	Verifiers   []kyber.Point
+	verifiers   []kyber.Point
 	HkdfContext []byte
 	*Aggregator
+}
+
+type Verifiers []kyber.Point
+
+func (v Verifiers) MarshalBinary() ([]byte, error) {
+	var temp [][]byte
+	for _, p := range v {
+		bz, err := p.MarshalBinary()
+		if err != nil {
+			panic(err)
+		}
+		temp = append(temp, bz)
+	}
+
+	return json.Marshal(temp)
+}
+
+func (v *Verifiers) UnmarshalBinary(data []byte) error {
+	var temp [][]byte
+	if err := json.Unmarshal(data, &temp); err != nil {
+		panic(err)
+	}
+
+	for _, _ = range temp {
+
+	}
+
+	return nil
 }
 
 // NewVerifier returns a Verifier out of:
 //   - its Longterm Secret key
 //   - the Longterm Dealer public key
-//   - the list of public key of Verifiers. The list MUST include the public key of this Verifier also.
+//   - the list of public key of verifiers. The list MUST include the public key of this Verifier also.
 // The security parameter T of the Secret sharing scheme is automatically set to
 // a default safe value. If a different T value is required, it is possible to set
 // it with `verifier.SetT()`.
@@ -337,13 +366,13 @@ func NewVerifier(suite Suite, longterm kyber.Scalar, dealerKey kyber.Point,
 		}
 	}
 	if !ok {
-		return nil, errors.New("vss: public key not found in the list of Verifiers")
+		return nil, errors.New("vss: public key not found in the list of verifiers")
 	}
 	v := &Verifier{
 		Suite:       suite,
 		Longterm:    longterm,
 		Dealer:      dealerKey,
-		Verifiers:   verifiers,
+		verifiers:   verifiers,
 		Pub:         pub,
 		IndexField:  index,
 		HkdfContext: context(suite, dealerKey, verifiers),
@@ -372,7 +401,7 @@ func (v *Verifier) ProcessEncryptedDeal(e *EncryptedDeal) (*Response, error) {
 
 	t := int(d.T)
 
-	sid, err := sessionID(v.Suite, v.Dealer, v.Verifiers, d.Commitments, t)
+	sid, err := sessionID(v.Suite, v.Dealer, v.verifiers, d.Commitments, t)
 	if err != nil {
 		return nil, err
 	}
@@ -484,7 +513,7 @@ func (v *Verifier) SessionID() []byte {
 }
 
 // RecoverSecret recovers the Secret shared by a Dealer by gathering at least T
-// Deals from the Verifiers. It returns an error if there is not enough Deals or
+// Deals from the verifiers. It returns an error if there is not enough Deals or
 // if all Deals don'T have the same SessionID.
 func RecoverSecret(suite Suite, deals []*Deal, n, t int) (kyber.Scalar, error) {
 	shares := make([]*share.PriShare, len(deals))

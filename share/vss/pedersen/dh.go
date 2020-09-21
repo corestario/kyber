@@ -44,7 +44,7 @@ func context(suite Suite, dealer kyber.Point, verifiers []kyber.Point) []byte {
 	h := suite.Hash()
 	_, _ = h.Write([]byte("vss-Dealer"))
 	_, _ = dealer.MarshalTo(h)
-	_, _ = h.Write([]byte("vss-Verifiers"))
+	_, _ = h.Write([]byte("vss-verifiers"))
 	for _, v := range verifiers {
 		_, _ = v.MarshalTo(h)
 	}
