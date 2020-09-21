@@ -330,22 +330,22 @@ func TestPriPolyMul(test *testing.T) {
 	b := NewPriPoly(suite, t, nil, suite.RandomStream())
 
 	c := a.Mul(b)
-	assert.Equal(test, len(a.coeffs)+len(b.coeffs)-1, len(c.coeffs))
+	assert.Equal(test, len(a.Coeffs)+len(b.Coeffs)-1, len(c.Coeffs))
 	nul := suite.Scalar().Zero()
-	for _, coeff := range c.coeffs {
+	for _, coeff := range c.Coeffs {
 		assert.NotEqual(test, nul.String(), coeff.String())
 	}
 
-	a0 := a.coeffs[0]
-	b0 := b.coeffs[0]
+	a0 := a.Coeffs[0]
+	b0 := b.Coeffs[0]
 	mul := suite.Scalar().Mul(b0, a0)
-	c0 := c.coeffs[0]
+	c0 := c.Coeffs[0]
 	assert.Equal(test, c0.String(), mul.String())
 
-	at := a.coeffs[len(a.coeffs)-1]
-	bt := b.coeffs[len(b.coeffs)-1]
+	at := a.Coeffs[len(a.Coeffs)-1]
+	bt := b.Coeffs[len(b.Coeffs)-1]
 	mul = suite.Scalar().Mul(at, bt)
-	ct := c.coeffs[len(c.coeffs)-1]
+	ct := c.Coeffs[len(c.Coeffs)-1]
 	assert.Equal(test, ct.String(), mul.String())
 }
 
@@ -383,7 +383,7 @@ func TestPriPolyCoefficients(test *testing.T) {
 	require.Len(test, coeffs, t)
 
 	b := CoefficientsToPriPoly(suite, coeffs)
-	require.Equal(test, a.coeffs, b.coeffs)
+	require.Equal(test, a.Coeffs, b.Coeffs)
 
 }
 

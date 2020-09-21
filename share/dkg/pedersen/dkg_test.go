@@ -45,7 +45,7 @@ func TestDKGNewDistKeyGenerator(t *testing.T) {
 	long := partSec[0]
 	dkg, err := NewDistKeyGenerator(suite, long, partPubs, defaultT)
 	require.Nil(t, err)
-	require.NotNil(t, dkg.dealer)
+	require.NotNil(t, dkg.Dealer)
 	require.True(t, dkg.CanIssue)
 	require.True(t, dkg.CanReceive)
 	require.True(t, dkg.NewPresent)
@@ -76,7 +76,7 @@ func TestDKGDeal(t *testing.T) {
 		require.Equal(t, uint32(0), deals[i].Index)
 	}
 
-	v, ok := dkg.verifiers[uint32(dkg.Nidx)]
+	v, ok := dkg.VerifiersMap[uint32(dkg.Nidx)]
 	require.True(t, ok)
 	require.NotNil(t, v)
 }
@@ -105,7 +105,7 @@ func TestDKGProcessDeal(t *testing.T) {
 	require.NotNil(t, resp)
 	require.Equal(t, vss.StatusApproval, resp.Response.Status)
 	require.Nil(t, err)
-	_, ok := rec.verifiers[deal.Index]
+	_, ok := rec.VerifiersMap[deal.Index]
 	require.True(t, ok)
 	require.Equal(t, uint32(0), resp.Index)
 
@@ -141,7 +141,7 @@ func TestDKGProcessResponse(t *testing.T) {
 	dkg := dkgs[0]
 	idxRec := 1
 	rec := dkgs[idxRec]
-	deal, err := dkg.dealer.PlaintextDeal(idxRec)
+	deal, err := dkg.Dealer.PlaintextDeal(idxRec)
 	require.Nil(t, err)
 
 	// give a wrong deal
@@ -159,15 +159,15 @@ func TestDKGProcessResponse(t *testing.T) {
 	encD = dd[idxRec]
 
 	// no verifier tied to Response
-	v, ok := dkg.verifiers[0]
+	v, ok := dkg.VerifiersMap[0]
 	require.NotNil(t, v)
 	require.True(t, ok)
 	require.NotNil(t, v)
-	delete(dkg.verifiers, 0)
+	delete(dkg.VerifiersMap, 0)
 	j, err := dkg.ProcessResponse(resp)
 	require.Nil(t, j)
 	require.NotNil(t, err)
-	dkg.verifiers[0] = v
+	dkg.VerifiersMap[0] = v
 
 	// invalid response
 	goodSig := resp.Response.Signature
@@ -186,9 +186,9 @@ func TestDKGProcessResponse(t *testing.T) {
 	dkg2 := dkgs[2]
 	require.Nil(t, err)
 	// fake a wrong deal
-	// deal20, err := dkg2.dealer.PlaintextDeal(0)
+	// deal20, err := dkg2.Dealer.PlaintextDeal(0)
 	// require.Nil(t, err)
-	deal21, err := dkg2.dealer.PlaintextDeal(1)
+	deal21, err := dkg2.Dealer.PlaintextDeal(1)
 	require.Nil(t, err)
 	goodRnd21 := deal21.SecShare.V
 	deal21.SecShare.V = suite.Scalar().Zero()
@@ -200,14 +200,14 @@ func TestDKGProcessResponse(t *testing.T) {
 	require.Equal(t, vss.StatusComplaint, resp12.Response.Status)
 	require.Equal(t, deals2[idxRec].Index, uint32(dkg2.Nidx))
 	require.Equal(t, resp12.Index, uint32(dkg2.Nidx))
-	require.Equal(t, vss.StatusComplaint, rec.verifiers[uint32(dkg2.Oidx)].Responses()[uint32(rec.Nidx)].Status)
+	require.Equal(t, vss.StatusComplaint, rec.VerifiersMap[uint32(dkg2.Oidx)].Responses()[uint32(rec.Nidx)].Status)
 
 	deal21.SecShare.V = goodRnd21
 	deals2, err = dkg2.Deals()
 	require.Nil(t, err)
 
 	// give it to the first peer
-	// process dealer 2's deal
+	// process Dealer 2's deal
 	r, err := dkg.ProcessDeal(deals2[0])
 	require.Nil(t, err)
 	require.NotNil(t, r)
@@ -218,23 +218,23 @@ func TestDKGProcessResponse(t *testing.T) {
 	require.Nil(t, err)
 
 	// Justification part:
-	// give the complaint to the dealer
+	// give the complaint to the Dealer
 	j, err = dkg2.ProcessResponse(resp12)
 	require.Nil(t, err)
 	require.NotNil(t, j)
 
 	// hack because all is local, and resp has been modified locally by dkg2's
-	// dealer, the status has became "justified"
+	// Dealer, the status has became "justified"
 	resp12.Response.Status = vss.StatusComplaint
 	err = dkg.ProcessJustification(j)
 	require.Nil(t, err)
 
-	// remove verifiers
-	v = dkg.verifiers[j.Index]
-	delete(dkg.verifiers, j.Index)
+	// remove VerifiersMap
+	v = dkg.VerifiersMap[j.Index]
+	delete(dkg.VerifiersMap, j.Index)
 	err = dkg.ProcessJustification(j)
 	require.Error(t, err)
-	dkg.verifiers[j.Index] = v
+	dkg.VerifiersMap[j.Index] = v
 
 }
 
@@ -338,7 +338,7 @@ func TestDKGResharingThreshold(t *testing.T) {
 				}
 				j, err := dkg.ProcessResponse(resp)
 				if err != nil {
-					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
+					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for Dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
 				}
 				require.Nil(t, err)
 				require.Nil(t, j)
@@ -471,7 +471,7 @@ func TestDKGThreshold(t *testing.T) {
 	}
 
 	for _, dkg := range thrDKGs {
-		for i, v := range dkg.verifiers {
+		for i, v := range dkg.VerifiersMap {
 			var app int
 			for _, r := range v.Responses() {
 				if r.Status == vss.StatusApproval {
@@ -836,7 +836,7 @@ func TestDKGResharingNewNodesThreshold(t *testing.T) {
 				j, err := dkg.ProcessResponse(resp)
 				//fmt.Printf("old dkg %d process responses from new dkg %d about deal %d\n", dkg.Oidx, dkg.Nidx, resp.Index)
 				if err != nil {
-					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
+					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for Dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
 				}
 				require.Nil(t, err)
 				require.Nil(t, j)
@@ -862,7 +862,7 @@ func TestDKGResharingNewNodesThreshold(t *testing.T) {
 	for _, dkg := range newDkgs {
 		for _, oldDkg := range oldSelected {
 			idx := oldDkg.Oidx
-			require.True(t, dkg.verifiers[uint32(idx)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, idx, dkg.verifiers[uint32(idx)].Responses())
+			require.True(t, dkg.VerifiersMap[uint32(idx)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, idx, dkg.VerifiersMap[uint32(idx)].Responses())
 		}
 	}
 
@@ -976,18 +976,18 @@ func TestDKGResharingNewNodes(t *testing.T) {
 		localDeals, err := dkg.Deals()
 		require.Nil(t, err)
 		deals = append(deals, localDeals)
-		v, exists := dkg.verifiers[uint32(dkg.Oidx)]
+		v, exists := dkg.VerifiersMap[uint32(dkg.Oidx)]
 		if dkg.CanReceive && dkg.Nidx == 0 {
 			// this node should save its own response for its own deal
 			lenResponses := len(v.Aggregator.Responses())
 			require.Equal(t, 1, lenResponses)
 		} else {
-			// no verifiers since these dkg are not in in the new list
+			// no VerifiersMap since these dkg are not in in the new list
 			require.False(t, exists)
 		}
 	}
 
-	// the index key indicates the dealer index for which the responses are for
+	// the index key indicates the Dealer index for which the responses are for
 	resps := make(map[int][]*Response)
 	for i, localDeals := range deals {
 		for j, d := range localDeals {
@@ -999,10 +999,10 @@ func TestDKGResharingNewNodes(t *testing.T) {
 		}
 	}
 
-	// all new dkgs should have the same length of verifiers map
+	// all new dkgs should have the same length of VerifiersMap map
 	for _, dkg := range newDkgs {
 		// one deal per old participants
-		require.Equal(t, oldN, len(dkg.verifiers), "dkg Nidx %d failing", dkg.Nidx)
+		require.Equal(t, oldN, len(dkg.VerifiersMap), "dkg Nidx %d failing", dkg.Nidx)
 	}
 
 	// 2. Broadcast responses
@@ -1016,7 +1016,7 @@ func TestDKGResharingNewNodes(t *testing.T) {
 				j, err := dkg.ProcessResponse(resp)
 				//fmt.Printf("old dkg %d process responses from new dkg %d about deal %d\n", dkg.Oidx, dkg.Nidx, resp.Index)
 				if err != nil {
-					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
+					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for Dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
 				}
 				require.Nil(t, err)
 				require.Nil(t, j)
@@ -1041,7 +1041,7 @@ func TestDKGResharingNewNodes(t *testing.T) {
 
 	for _, dkg := range newDkgs {
 		for i := 0; i < oldN; i++ {
-			require.True(t, dkg.verifiers[uint32(i)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, i, dkg.verifiers[uint32(i)].Responses())
+			require.True(t, dkg.VerifiersMap[uint32(i)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, i, dkg.VerifiersMap[uint32(i)].Responses())
 		}
 	}
 
@@ -1164,7 +1164,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 		localDeals, err := dkg.Deals()
 		require.Nil(t, err)
 		deals = append(deals, localDeals)
-		v, exists := dkg.verifiers[uint32(dkg.Oidx)]
+		v, exists := dkg.VerifiersMap[uint32(dkg.Oidx)]
 		if dkg.CanReceive && dkg.NewPresent {
 			// this node should save its own response for its own deal
 			lenResponses := len(v.Aggregator.Responses())
@@ -1175,7 +1175,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 		}
 	}
 
-	// the index key indicates the dealer index for which the responses are for
+	// the index key indicates the Dealer index for which the responses are for
 	resps := make(map[int][]*Response)
 	for i, localDeals := range deals {
 		for j, d := range localDeals {
@@ -1185,15 +1185,15 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 			require.Equal(t, vss.StatusApproval, resp.Response.Status)
 			resps[i] = append(resps[i], resp)
 			if i == 0 {
-				//fmt.Printf("dealer (Oidx %d, Nidx %d) processing deal to %d from %d\n", newDkgs[i].Oidx, newDkgs[i].Nidx, i, d.Index)
+				//fmt.Printf("Dealer (Oidx %d, Nidx %d) processing deal to %d from %d\n", newDkgs[i].Oidx, newDkgs[i].Nidx, i, d.Index)
 			}
 		}
 	}
 
-	// all new dkgs should have the same length of verifiers map
+	// all new dkgs should have the same length of VerifiersMap map
 	for _, dkg := range newDkgs {
 		// one deal per old participants
-		require.Equal(t, oldN, len(dkg.verifiers), "dkg Nidx %d failing", dkg.Nidx)
+		require.Equal(t, oldN, len(dkg.VerifiersMap), "dkg Nidx %d failing", dkg.Nidx)
 	}
 
 	// 2. Broadcast responses
@@ -1207,7 +1207,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 				j, err := dkg.ProcessResponse(resp)
 				//fmt.Printf("old dkg %d process responses from new dkg %d about deal %d\n", dkg.Oidx, dkg.Nidx, resp.Index)
 				if err != nil {
-					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
+					fmt.Printf("old dkg at (Oidx %d, Nidx %d) has received response from idx %d for Dealer idx %d\n", dkg.Oidx, dkg.Nidx, resp.Response.Index, resp.Index)
 				}
 				require.Nil(t, err)
 				require.Nil(t, j)
@@ -1216,7 +1216,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 	}
 	for _, dkg := range newDkgs {
 		for i := 0; i < oldN; i++ {
-			require.True(t, dkg.verifiers[uint32(i)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, i, dkg.verifiers[uint32(i)].Responses())
+			require.True(t, dkg.VerifiersMap[uint32(i)].DealCertified(), "new dkg %d has not certified deal %d => %v", dkg.Nidx, i, dkg.VerifiersMap[uint32(i)].Responses())
 		}
 	}
 
@@ -1257,7 +1257,7 @@ func TestReaderMixedEntropy(t *testing.T) {
 	}
 	dkg, err := NewDistKeyHandler(c)
 	require.Nil(t, err)
-	require.NotNil(t, dkg.dealer)
+	require.NotNil(t, dkg.Dealer)
 }
 
 func TestUserOnlyFlagTrueBehavior(t *testing.T) {
@@ -1276,7 +1276,7 @@ func TestUserOnlyFlagTrueBehavior(t *testing.T) {
 	}
 	dkg1, err := NewDistKeyHandler(c1)
 	require.Nil(t, err)
-	require.NotNil(t, dkg1.dealer)
+	require.NotNil(t, dkg1.Dealer)
 
 	r2 := strings.NewReader(seed)
 	c2 := &Config{
@@ -1289,9 +1289,9 @@ func TestUserOnlyFlagTrueBehavior(t *testing.T) {
 	}
 	dkg2, err := NewDistKeyHandler(c2)
 	require.Nil(t, err)
-	require.NotNil(t, dkg2.dealer)
+	require.NotNil(t, dkg2.Dealer)
 
-	require.True(t, dkg1.dealer.PrivatePoly().Secret().Equal(dkg2.dealer.PrivatePoly().Secret()))
+	require.True(t, dkg1.Dealer.PrivatePoly().Secret().Equal(dkg2.Dealer.PrivatePoly().Secret()))
 }
 
 func TestUserOnlyFlagFalseBehavior(t *testing.T) {
@@ -1310,7 +1310,7 @@ func TestUserOnlyFlagFalseBehavior(t *testing.T) {
 	}
 	dkg1, err := NewDistKeyHandler(c1)
 	require.Nil(t, err)
-	require.NotNil(t, dkg1.dealer)
+	require.NotNil(t, dkg1.Dealer)
 
 	r2 := strings.NewReader(seed)
 	c2 := &Config{
@@ -1323,7 +1323,7 @@ func TestUserOnlyFlagFalseBehavior(t *testing.T) {
 	}
 	dkg2, err := NewDistKeyHandler(c2)
 	require.Nil(t, err)
-	require.NotNil(t, dkg2.dealer)
+	require.NotNil(t, dkg2.Dealer)
 
-	require.False(t, dkg1.dealer.PrivatePoly().Secret().Equal(dkg2.dealer.PrivatePoly().Secret()))
+	require.False(t, dkg1.Dealer.PrivatePoly().Secret().Equal(dkg2.Dealer.PrivatePoly().Secret()))
 }
