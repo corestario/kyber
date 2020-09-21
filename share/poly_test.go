@@ -435,7 +435,7 @@ func TestRefreshDKG(test *testing.T) {
 		dkgCommits[k] = acc
 	}
 
-	// Check that the private DKG shares verify against the public DKG commits
+	// Check that the private DKG shares verify against the public DKG Commits
 	dkgPubPoly := NewPubPoly(g, nil, dkgCommits)
 	for i := 0; i < n; i++ {
 		require.True(test, dkgPubPoly.Check(dkgShares[i]))
@@ -505,7 +505,7 @@ func TestRefreshDKG(test *testing.T) {
 		require.False(test, dkgShares[i].V.Equal(newDKGShares[i].V))
 	}
 
-	// Check that the refreshed private DKG shares verify against the refreshed public DKG commits
+	// Check that the refreshed private DKG shares verify against the refreshed public DKG Commits
 	q := NewPubPoly(g, nil, newDKGCommits)
 	for i := 0; i < n; i++ {
 		require.True(test, q.Check(newDKGShares[i]))

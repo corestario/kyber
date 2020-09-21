@@ -2,6 +2,7 @@ package kyber
 
 import (
 	"crypto/cipher"
+	"encoding"
 )
 
 // Scalar represents a scalar value by which
@@ -155,6 +156,9 @@ type AllowsVarTime interface {
 // the standard homomorphism properties that Diffie-Hellman
 // and the associated body of public-key cryptography are based on.
 type Group interface {
+	encoding.BinaryMarshaler
+	encoding.BinaryUnmarshaler
+
 	String() string
 
 	ScalarLen() int // Max length of scalars in bytes

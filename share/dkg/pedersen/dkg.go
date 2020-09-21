@@ -101,7 +101,7 @@ type DistKeyGenerator struct {
 
 	Long   kyber.Scalar
 	Pub    kyber.Point
-	dpub   *share.PubPoly
+	Dpub   *share.PubPoly
 	dealer *vss.Dealer
 	// verifiers indexed by dealer index
 	verifiers map[uint32]*vss.Verifier
@@ -225,7 +225,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 		CanReceive:     canReceive,
 		CanIssue:       canIssue,
 		IsResharing:    isResharing,
-		dpub:           dpub,
+		Dpub:           dpub,
 		Oidx:           oidx,
 		Nidx:           nidx,
 		C:              c,
@@ -379,7 +379,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 		dealCommits := ver.Commits()
 		// Check that the received committed share is equal to the one we
 		// generate from the known public polynomial
-		expectedPubShare := d.dpub.Eval(int(dd.Index))
+		expectedPubShare := d.Dpub.Eval(int(dd.Index))
 		if !expectedPubShare.V.Equal(dealCommits[0]) {
 			return reject()
 		}

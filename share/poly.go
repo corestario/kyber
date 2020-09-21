@@ -117,7 +117,7 @@ func (p *PriPoly) Add(q *PriPoly) (*PriPoly, error) {
 }
 
 // Equal checks equality of two secret sharing polynomials p and q. If p and q are trivially
-// unequal (e.g., due to mismatching cryptographic groups or polynomial size), this routine
+// unequal (e.G., due to mismatching cryptographic groups or polynomial size), this routine
 // returns in variable time. Otherwise it runs in constant time regardless of whether it
 // eventually returns true or false.
 func (p *PriPoly) Equal(q *PriPoly) bool {
@@ -136,8 +136,8 @@ func (p *PriPoly) Equal(q *PriPoly) bool {
 	return b == 1
 }
 
-// Commit creates a public commitment polynomial for the given base point b or
-// the standard base if b == nil.
+// Commit creates a public commitment polynomial for the given base point B or
+// the standard base if B == nil.
 func (p *PriPoly) Commit(b kyber.Point) *PubPoly {
 	commits := make([]kyber.Point, p.Threshold())
 	for i := range commits {
@@ -263,7 +263,7 @@ func RecoverPriPoly(g kyber.Group, shares []*PriShare, t, n int) (*PriPoly, erro
 
 	var accPoly *PriPoly
 	var err error
-	//den := g.Scalar()
+	//den := G.Scalar()
 	// Notations follow the Wikipedia article on Lagrange interpolation
 	// https://en.wikipedia.org/wiki/Lagrange_polynomial
 	for j := range x {
@@ -310,9 +310,9 @@ func (p *PubShare) Hash(s kyber.HashFactory) []byte {
 
 // PubPoly represents a public commitment polynomial to a secret sharing polynomial.
 type PubPoly struct {
-	g       kyber.Group   // Cryptographic group
-	b       kyber.Point   // Base point, nil for standard base
-	commits []kyber.Point // Commitments to coefficients of the secret sharing polynomial
+	G       kyber.Group   // Cryptographic group
+	B       kyber.Point   // Base point, nil for standard base
+	Commits []kyber.Point // Commitments to coefficients of the secret sharing polynomial
 }
 
 // NewPubPoly creates a new public commitment polynomial.
@@ -322,26 +322,26 @@ func NewPubPoly(g kyber.Group, b kyber.Point, commits []kyber.Point) *PubPoly {
 
 // Info returns the base point and the commitments to the polynomial coefficients.
 func (p *PubPoly) Info() (base kyber.Point, commits []kyber.Point) {
-	return p.b, p.commits
+	return p.B, p.Commits
 }
 
 // Threshold returns the secret sharing threshold.
 func (p *PubPoly) Threshold() int {
-	return len(p.commits)
+	return len(p.Commits)
 }
 
 // Commit returns the secret commitment p(0), i.e., the constant term of the polynomial.
 func (p *PubPoly) Commit() kyber.Point {
-	return p.commits[0]
+	return p.Commits[0]
 }
 
 // Eval computes the public share v = p(i).
 func (p *PubPoly) Eval(i int) *PubShare {
-	xi := p.g.Scalar().SetInt64(1 + int64(i)) // x-coordinate of this share
-	v := p.g.Point().Null()
+	xi := p.G.Scalar().SetInt64(1 + int64(i)) // x-coordinate of this share
+	v := p.G.Point().Null()
 	for j := p.Threshold() - 1; j >= 0; j-- {
 		v.Mul(xi, v)
-		v.Add(v, p.commits[j])
+		v.Add(v, p.Commits[j])
 	}
 	return &PubShare{i, v}
 }
@@ -356,13 +356,13 @@ func (p *PubPoly) Shares(n int) []*PubShare {
 }
 
 // Add computes the component-wise sum of the polynomials p and q and returns it
-// as a new polynomial. NOTE: If the base points p.b and q.b are different then the
+// as a new polynomial. NOTE: If the base points p.B and q.B are different then the
 // base point of the resulting PubPoly cannot be computed without knowing the
-// discrete logarithm between p.b and q.b. In this particular case, we are using
-// p.b as a default value which of course does not correspond to the correct
+// discrete logarithm between p.B and q.B. In this particular case, we are using
+// p.B as a default value which of course does not correspond to the correct
 // base point and thus should not be used in further computations.
 func (p *PubPoly) Add(q *PubPoly) (*PubPoly, error) {
-	if p.g.String() != q.g.String() {
+	if p.G.String() != q.G.String() {
 		return nil, errorGroups
 	}
 
@@ -372,24 +372,24 @@ func (p *PubPoly) Add(q *PubPoly) (*PubPoly, error) {
 
 	commits := make([]kyber.Point, p.Threshold())
 	for i := range commits {
-		commits[i] = p.g.Point().Add(p.commits[i], q.commits[i])
+		commits[i] = p.G.Point().Add(p.Commits[i], q.Commits[i])
 	}
 
-	return &PubPoly{p.g, p.b, commits}, nil
+	return &PubPoly{p.G, p.B, commits}, nil
 }
 
 // Equal checks equality of two public commitment polynomials p and q. If p and
-// q are trivially unequal (e.g., due to mismatching cryptographic groups),
+// q are trivially unequal (e.G., due to mismatching cryptographic groups),
 // this routine returns in variable time. Otherwise it runs in constant time
 // regardless of whether it eventually returns true or false.
 func (p *PubPoly) Equal(q *PubPoly) bool {
-	if p.g.String() != q.g.String() {
+	if p.G.String() != q.G.String() {
 		return false
 	}
 	b := 1
 	for i := 0; i < p.Threshold(); i++ {
-		pb, _ := p.commits[i].MarshalBinary()
-		qb, _ := q.commits[i].MarshalBinary()
+		pb, _ := p.Commits[i].MarshalBinary()
+		qb, _ := q.Commits[i].MarshalBinary()
 		b &= subtle.ConstantTimeCompare(pb, qb)
 	}
 	return b == 1
@@ -398,7 +398,7 @@ func (p *PubPoly) Equal(q *PubPoly) bool {
 // Check a private share against a public commitment polynomial.
 func (p *PubPoly) Check(s *PriShare) bool {
 	pv := p.Eval(s.I)
-	ps := p.g.Point().Mul(s.V, p.b)
+	ps := p.G.Point().Mul(s.V, p.B)
 	return pv.V.Equal(ps)
 }
 

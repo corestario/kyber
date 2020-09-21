@@ -23,10 +23,16 @@ import (
 type Suite interface {
 	encoding.BinaryMarshaler
 	encoding.BinaryUnmarshaler
-	kyber.Group
 	kyber.HashFactory
 	kyber.XOFFactory
 	kyber.Random
+
+	// This is kyber.Group, but without the marshalling part.
+	String() string
+	ScalarLen() int // Max length of scalars in bytes
+	Scalar() kyber.Scalar // Create new scalar
+	PointLen() int // Max length of point in bytes
+	Point() kyber.Point  // Create new point
 }
 
 // Dealer encapsulates for creating and distributing the shares and for
