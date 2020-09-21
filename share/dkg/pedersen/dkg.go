@@ -96,8 +96,8 @@ type Config struct {
 // DistKeyGenerator is the struct that runs the DKG protocol.
 type DistKeyGenerator struct {
 	// config driving the behavior of DistKeyGenerator
-	c     *Config
-	suite Suite
+	C     *Config
+	Suite Suite
 
 	Long   kyber.Scalar
 	Pub    kyber.Point
@@ -219,7 +219,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 	dkg := &DistKeyGenerator{
 		dealer:         dealer,
 		oldAggregators: make(map[uint32]*vss.Aggregator),
-		suite:          c.Suite,
+		Suite:          c.Suite,
 		Long:           c.Longterm,
 		Pub:            pub,
 		CanReceive:     canReceive,
@@ -228,7 +228,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 		dpub:           dpub,
 		Oidx:           oidx,
 		Nidx:           nidx,
-		c:              c,
+		C:              c,
 		OldT:           oldThreshold,
 		NewT:           newThreshold,
 		NewPresent:     newPresent,
@@ -253,7 +253,7 @@ func NewDistKeyGenerator(suite Suite, longterm kyber.Scalar, participants []kybe
 }
 
 func (d *DistKeyGenerator) GetConfig() *Config {
-	return d.c
+	return d.C
 }
 
 func (d *DistKeyGenerator) GetDealer() *vss.Dealer {
@@ -284,7 +284,7 @@ func (d *DistKeyGenerator) Deals() (map[int]*Deal, error) {
 		return nil, err
 	}
 	dd := make(map[int]*Deal)
-	for i := range d.c.NewNodes {
+	for i := range d.C.NewNodes {
 		distd := &Deal{
 			Index: uint32(d.Oidx),
 			Deal:  deals[i],
@@ -294,7 +294,7 @@ func (d *DistKeyGenerator) Deals() (map[int]*Deal, error) {
 		if err != nil {
 			return nil, err
 		}
-		distd.Signature, err = schnorr.Sign(d.suite, d.Long, buff)
+		distd.Signature, err = schnorr.Sign(d.Suite, d.Long, buff)
 		if err != nil {
 			return nil, err
 		}
@@ -327,9 +327,9 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	var pub kyber.Point
 	var ok bool
 	if d.IsResharing {
-		pub, ok = getPub(d.c.OldNodes, dd.Index)
+		pub, ok = getPub(d.C.OldNodes, dd.Index)
 	} else {
-		pub, ok = getPub(d.c.NewNodes, dd.Index)
+		pub, ok = getPub(d.C.NewNodes, dd.Index)
 	}
 	// public key of the dealer
 	if !ok {
@@ -341,7 +341,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := schnorr.Verify(d.suite, pub, buff, dd.Signature); err != nil {
+	if err := schnorr.Verify(d.Suite, pub, buff, dd.Signature); err != nil {
 		return nil, err
 	}
 
@@ -353,7 +353,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	}
 
 	reject := func() (*Response, error) {
-		idx, present := findPub(d.c.NewNodes, pub)
+		idx, present := findPub(d.C.NewNodes, pub)
 		if present {
 			// the dealer is present in both list, so we set its own response
 			// (as a verifier) to a complaint since he won't do it himself
@@ -363,7 +363,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 		// deal
 		d.verifiers[uint32(dd.Index)].UnsafeSetResponseDKG(uint32(d.Nidx), vss.StatusComplaint)
 		resp.Status = vss.StatusComplaint
-		s, err := schnorr.Sign(d.suite, d.Long, resp.Hash(d.suite))
+		s, err := schnorr.Sign(d.Suite, d.Long, resp.Hash(d.Suite))
 		if err != nil {
 			return nil, err
 		}
@@ -388,7 +388,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	// if the dealer in the old list is also present in the new list, then set
 	// his response to approval since he won't issue his own response for his
 	// own deal
-	newIdx, found := findPub(d.c.NewNodes, pub)
+	newIdx, found := findPub(d.C.NewNodes, pub)
 	if found {
 		d.verifiers[dd.Index].UnsafeSetResponseDKG(uint32(newIdx), vss.StatusApproval)
 	}
@@ -447,7 +447,7 @@ func (d *DistKeyGenerator) ProcessResponse(resp *Response) (*Justification, erro
 func (d *DistKeyGenerator) processResharingResponse(resp *Response) (*Justification, error) {
 	agg, present := d.oldAggregators[resp.Index]
 	if !present {
-		agg = vss.NewEmptyAggregator(d.suite, d.c.NewNodes)
+		agg = vss.NewEmptyAggregator(d.Suite, d.C.NewNodes)
 		d.oldAggregators[resp.Index] = agg
 	}
 
@@ -511,10 +511,10 @@ func (d *DistKeyGenerator) ThresholdCertified() bool {
 		// deals to be at least what the old threshold was. (and for each deal,
 		// we want the number of approval to be a least what the new threshold
 		// is).
-		return len(d.QUAL()) >= d.c.OldThreshold
+		return len(d.QUAL()) >= d.C.OldThreshold
 	}
 	// in dkg case, the threshold is symmetric -> # verifiers = # dealers
-	return len(d.QUAL()) >= d.c.Threshold
+	return len(d.QUAL()) >= d.C.Threshold
 }
 
 // Certified returns true if *all* deals are certified. This method should
@@ -539,7 +539,7 @@ func (d *DistKeyGenerator) Certified() bool {
 			return true
 		})
 	}
-	return len(good) >= len(d.c.OldNodes)
+	return len(good) >= len(d.C.OldNodes)
 }
 
 // QualifiedShares returns the set of shares holder index that are considered
@@ -565,7 +565,7 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 			// their deal in the first place.
 			invalidDeals[int(dealerIndex)] = true
 		}
-		for holderIndex := range d.c.NewNodes {
+		for holderIndex := range d.C.NewNodes {
 			resp, ok := responses[uint32(holderIndex)]
 			if ok && resp.Status == vss.StatusComplaint {
 				// 1. rule
@@ -582,7 +582,7 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 			continue
 		}
 		responses := verifier.Responses()
-		for holderIndex := range d.c.NewNodes {
+		for holderIndex := range d.C.NewNodes {
 			_, ok := responses[uint32(holderIndex)]
 			if !ok {
 				// 2. rule - absent response
@@ -592,7 +592,7 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 	}
 
 	var validHolders []int
-	for i := range d.c.NewNodes {
+	for i := range d.C.NewNodes {
 		if _, included := invalidSh[i]; included {
 			continue
 		}
@@ -606,9 +606,9 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 func (d *DistKeyGenerator) ExpectedDeals() int {
 	switch {
 	case d.NewPresent && d.OldPresent:
-		return len(d.c.OldNodes) - 1
+		return len(d.C.OldNodes) - 1
 	case d.NewPresent && !d.OldPresent:
-		return len(d.c.OldNodes)
+		return len(d.C.OldNodes)
 	default:
 		return 0
 	}
@@ -689,7 +689,7 @@ func (d *DistKeyGenerator) DistKeyShare() (*DistKeyShare, error) {
 }
 
 func (d *DistKeyGenerator) dkgKey() (*DistKeyShare, error) {
-	sh := d.suite.Scalar().Zero()
+	sh := d.Suite.Scalar().Zero()
 	var pub *share.PubPoly
 	var err error
 	d.qualIter(func(i uint32, v *vss.Verifier) bool {
@@ -698,7 +698,7 @@ func (d *DistKeyGenerator) dkgKey() (*DistKeyShare, error) {
 		s := deal.SecShare.V
 		sh = sh.Add(sh, s)
 		// Dist. public key = sum of all revealed commitments
-		poly := share.NewPubPoly(d.suite, d.suite.Point().Base(), deal.Commitments)
+		poly := share.NewPubPoly(d.Suite, d.Suite.Point().Base(), deal.Commitments)
 		if pub == nil {
 			// first polynomial we see (instead of generating n empty commits)
 			pub = poly
@@ -726,8 +726,8 @@ func (d *DistKeyGenerator) dkgKey() (*DistKeyShare, error) {
 
 func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 	// only old nodes sends shares
-	shares := make([]*share.PriShare, len(d.c.OldNodes))
-	coeffs := make([][]kyber.Point, len(d.c.OldNodes))
+	shares := make([]*share.PriShare, len(d.C.OldNodes))
+	coeffs := make([][]kyber.Point, len(d.C.OldNodes))
 	d.qualIter(func(i uint32, v *vss.Verifier) bool {
 		deal := v.Deal()
 		coeffs[int(i)] = deal.Commitments
@@ -739,7 +739,7 @@ func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 
 	// the private polynomial is generated from the old nodes, thus inheriting
 	// the old threshold condition
-	priPoly, err := share.RecoverPriPoly(d.suite, shares, d.OldT, len(d.c.OldNodes))
+	priPoly, err := share.RecoverPriPoly(d.Suite, shares, d.OldT, len(d.C.OldNodes))
 	if err != nil {
 		return nil, err
 	}
@@ -764,9 +764,9 @@ func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 		}
 
 		// using the old threshold / length because there are at most
-		// len(d.c.OldNodes) i-th coefficients since they are the one generating one
+		// len(d.C.OldNodes) i-th coefficients since they are the one generating one
 		// each, thus using the old threshold.
-		coeff, err := share.RecoverCommit(d.suite, tmpCoeffs, d.OldT, len(d.c.OldNodes))
+		coeff, err := share.RecoverCommit(d.Suite, tmpCoeffs, d.OldT, len(d.C.OldNodes))
 		if err != nil {
 			return nil, err
 		}
@@ -774,7 +774,7 @@ func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 	}
 
 	// Reconstruct the final public polynomial
-	pubPoly := share.NewPubPoly(d.suite, nil, finalCoeffs)
+	pubPoly := share.NewPubPoly(d.Suite, nil, finalCoeffs)
 
 	if !pubPoly.Check(privateShare) {
 		return nil, errors.New("dkg: share do not correspond to public polynomial ><")

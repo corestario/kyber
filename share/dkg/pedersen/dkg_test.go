@@ -93,12 +93,12 @@ func TestDKGProcessDeal(t *testing.T) {
 	require.Equal(t, 1, rec.Nidx)
 
 	// verifier don't find itself
-	goodP := rec.c.NewNodes
-	rec.c.NewNodes = make([]kyber.Point, 0)
+	goodP := rec.C.NewNodes
+	rec.C.NewNodes = make([]kyber.Point, 0)
 	resp, err := rec.ProcessDeal(deal)
 	require.Nil(t, resp)
 	require.Error(t, err)
-	rec.c.NewNodes = goodP
+	rec.C.NewNodes = goodP
 
 	// good deal
 	resp, err = rec.ProcessDeal(deal)
@@ -268,7 +268,7 @@ func TestDKGResharingThreshold(t *testing.T) {
 	for i := range dkgs {
 		c := &Config{
 			Suite:        suite,
-			Longterm:     dkgs[i].c.Longterm,
+			Longterm:     dkgs[i].C.Longterm,
 			OldNodes:     publics,
 			NewNodes:     newPubs,
 			Share:        shares[i],

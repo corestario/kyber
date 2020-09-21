@@ -7,6 +7,7 @@ package vss
 import (
 	"bytes"
 	"crypto/cipher"
+	"encoding"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -20,6 +21,8 @@ import (
 
 // Suite defines the capabilities required by the vss package.
 type Suite interface {
+	encoding.BinaryMarshaler
+	encoding.BinaryUnmarshaler
 	kyber.Group
 	kyber.HashFactory
 	kyber.XOFFactory
