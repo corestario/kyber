@@ -26,17 +26,17 @@ type hashablePoint interface {
 }
 
 // NewKeyPair creates a new BLS signing key pair. The private key x is a scalar
-// and the public key X is a point on curve G2.
+// and the public key X is a point on curve G1.
 func NewKeyPair(suite pairing.Suite, random cipher.Stream) (kyber.Scalar, kyber.Point) {
-	x := suite.G2().Scalar().Pick(random)
-	X := suite.G2().Point().Mul(x, nil)
+	x := suite.G1().Scalar().Pick(random)
+	X := suite.G1().Point().Mul(x, nil)
 	return x, X
 }
 
 // Sign creates a BLS signature S = x * H(m) on a message m using the private
-// key x. The signature S is a point on curve G1.
+// key x. The signature S is a point on curve G2.
 func Sign(suite pairing.Suite, x kyber.Scalar, msg []byte) ([]byte, error) {
-	hashable, ok := suite.G1().Point().(hashablePoint)
+	hashable, ok := suite.G2().Point().(hashablePoint)
 	if !ok {
 		return nil, errors.New("point needs to implement hashablePoint")
 	}
@@ -52,9 +52,9 @@ func Sign(suite pairing.Suite, x kyber.Scalar, msg []byte) ([]byte, error) {
 
 // AggregateSignatures combines signatures created using the Sign function
 func AggregateSignatures(suite pairing.Suite, sigs ...[]byte) ([]byte, error) {
-	sig := suite.G1().Point()
+	sig := suite.G2().Point()
 	for _, sigBytes := range sigs {
-		sigToAdd := suite.G1().Point()
+		sigToAdd := suite.G2().Point()
 		if err := sigToAdd.UnmarshalBinary(sigBytes); err != nil {
 			return nil, err
 		}
@@ -63,10 +63,10 @@ func AggregateSignatures(suite pairing.Suite, sigs ...[]byte) ([]byte, error) {
 	return sig.MarshalBinary()
 }
 
-// AggregatePublicKeys takes a slice of public G2 points and returns
+// AggregatePublicKeys takes a slice of public G1 points and returns
 // the sum of those points. This is used to verify multisignatures.
 func AggregatePublicKeys(suite pairing.Suite, Xs ...kyber.Point) kyber.Point {
-	aggregated := suite.G2().Point()
+	aggregated := suite.G1().Point()
 	for _, X := range Xs {
 		aggregated.Add(aggregated, X)
 	}
@@ -84,14 +84,14 @@ func BatchVerify(suite pairing.Suite, publics []kyber.Point, msgs [][]byte, sig 
 		return fmt.Errorf("bls: error, messages must be distinct")
 	}
 
-	s := suite.G1().Point()
+	s := suite.G2().Point()
 	if err := s.UnmarshalBinary(sig); err != nil {
 		return err
 	}
 
 	var aggregatedLeft kyber.Point
 	for i := range msgs {
-		hashable, ok := suite.G1().Point().(hashablePoint)
+		hashable, ok := suite.G2().Point().(hashablePoint)
 		if !ok {
 			return errors.New("bls: point needs to implement hashablePoint")
 		}
@@ -105,7 +105,7 @@ func BatchVerify(suite pairing.Suite, publics []kyber.Point, msgs [][]byte, sig 
 		}
 	}
 
-	right := suite.Pair(s, suite.G2().Point().Base())
+	right := suite.Pair(s, suite.G1().Point().Base())
 	if !aggregatedLeft.Equal(right) {
 		return errors.New("bls: invalid signature")
 	}
@@ -115,19 +115,19 @@ func BatchVerify(suite pairing.Suite, publics []kyber.Point, msgs [][]byte, sig 
 // Verify checks the given BLS signature S on the message m using the public
 // key X by verifying that the equality e(H(m), X) == e(H(m), x*B2) ==
 // e(x*H(m), B2) == e(S, B2) holds where e is the pairing operation and B2 is
-// the base point from curve G2.
+// the base point from curve G1.
 func Verify(suite pairing.Suite, X kyber.Point, msg, sig []byte) error {
-	hashable, ok := suite.G1().Point().(hashablePoint)
+	hashable, ok := suite.G2().Point().(hashablePoint)
 	if !ok {
 		return errors.New("bls: point needs to implement hashablePoint")
 	}
 	HM := hashable.Hash(msg)
 	left := suite.Pair(HM, X)
-	s := suite.G1().Point()
+	s := suite.G2().Point()
 	if err := s.UnmarshalBinary(sig); err != nil {
 		return err
 	}
-	right := suite.Pair(s, suite.G2().Point().Base())
+	right := suite.Pair(s, suite.G1().Point().Base())
 	if !left.Equal(right) {
 		return errors.New("bls: invalid signature")
 	}
