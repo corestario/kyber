@@ -23,13 +23,13 @@ import (
 	"io"
 	"reflect"
 
-	"go.dedis.ch/fixbuf"
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/util/random"
 	"github.com/corestario/kyber/xof/blake2xb"
+	"go.dedis.ch/fixbuf"
 )
 
-// Suite implements the pairing.Suite interface for the BN256 bilinear pairing.
+// suite implements the pairing.suite interface for the BN256 bilinear pairing.
 type Suite struct {
 	*commonSuite
 	g1 *groupG1
@@ -113,7 +113,7 @@ var tPointGT = reflect.TypeOf(&aPointGT).Elem()
 
 type commonSuite struct {
 	s cipher.Stream
-	// kyber.Group is only set if we have a combined Suite
+	// kyber.Group is only set if we have a combined suite
 	kyber.Group
 }
 

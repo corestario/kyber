@@ -42,7 +42,7 @@ import (
 	"go.dedis.ch/protobuf"
 )
 
-// Suite defines the capabilities required by the vss package.
+// suite defines the capabilities required by the vss package.
 type Suite interface {
 	kyber.Group
 	kyber.HashFactory

@@ -11,7 +11,7 @@ import (
 	"github.com/corestario/kyber"
 )
 
-// Suite wraps the functionalities needed by the dleq package.
+// suite wraps the functionalities needed by the dleq package.
 type Suite interface {
 	kyber.Group
 	kyber.HashFactory

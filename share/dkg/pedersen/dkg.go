@@ -23,13 +23,13 @@ import (
 	"github.com/corestario/kyber/sign/schnorr"
 )
 
-// Suite wraps the functionalities needed by the dkg package
+// suite wraps the functionalities needed by the dkg package
 type Suite vss.Suite
 
 // Config holds all required information to run a fresh DKG protocol or a
 // resharing protocol. In the case of a new fresh DKG protocol, one must fill
-// the following fields: Suite, Longterm, NewNodes, Threshold (opt). In the case
-// of a resharing protocol, one must fill the following: Suite, Longterm,
+// the following fields: suite, longterm, NewNodes, Threshold (opt). In the case
+// of a resharing protocol, one must fill the following: suite, longterm,
 // OldNodes, NewNodes. If the node using this config is creating new shares
 // (i.e. it belongs to the current group), the Share field must be filled in
 // with the current share of the node. If the node using this config is a new
@@ -38,7 +38,7 @@ type Suite vss.Suite
 type Config struct {
 	Suite Suite
 
-	// Longterm is the longterm secret key.
+	// longterm is the longterm secret key.
 	Longterm kyber.Scalar
 
 	// Current group of share holders. It will be nil for new DKG. These nodes
@@ -105,8 +105,8 @@ type DistKeyGenerator struct {
 	Pub    kyber.Point
 	Dpub   *share.PubPoly
 	Dealer *vss.Dealer
-	// VerifiersMap indexed by Dealer index
-	VerifiersMap map[uint32]*vss.Verifier
+	// verifiersMap indexed by dealer index
+	verifiersMap map[uint32]*vss.Verifier
 	// performs the part of the response verification for old nodes
 	OldAggregators map[uint32]*vss.Aggregator
 	// index in the old list of nodes
@@ -123,7 +123,7 @@ type DistKeyGenerator struct {
 	CanIssue bool
 	// Indicates whether we are able to receive a new share or not
 	CanReceive bool
-	// indicates whether the node holding the Pub key is present in the new list
+	// indicates whether the node holding the pub key is present in the new list
 	NewPresent bool
 	// indicates whether the node is present in the old list
 	OldPresent bool
@@ -324,7 +324,7 @@ func (d *DistKeyGenerator) Deals() (map[int]*Deal, error) {
 // or if the deal is incorrect (see vss.Verifier.ProcessEncryptedDeal).
 func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	if !d.NewPresent {
-		return nil, errors.New("dkg: unexpected deal for unlisted Dealer in new list")
+		return nil, errors.New("dkg: unexpected deal for unlisted dealer in new list")
 	}
 	var pub kyber.Point
 	var ok bool
@@ -333,7 +333,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	} else {
 		pub, ok = getPub(d.C.NewNodes, dd.Index)
 	}
-	// public key of the Dealer
+	// public key of the dealer
 	if !ok {
 		return nil, errors.New("dkg: dist deal out of bounds index")
 	}
@@ -347,7 +347,7 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 		return nil, err
 	}
 
-	ver, _ := d.VerifiersMap[dd.Index]
+	ver, _ := d.verifiersMap[dd.Index]
 
 	resp, err := ver.ProcessEncryptedDeal(dd.Deal)
 	if err != nil {
@@ -357,13 +357,13 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 	reject := func() (*Response, error) {
 		idx, present := findPub(d.C.NewNodes, pub)
 		if present {
-			// the Dealer is present in both list, so we set its own response
+			// the dealer is present in both list, so we set its own response
 			// (as a verifier) to a complaint since he won't do it himself
-			d.VerifiersMap[uint32(dd.Index)].UnsafeSetResponseDKG(uint32(idx), vss.StatusComplaint)
+			d.verifiersMap[uint32(dd.Index)].UnsafeSetResponseDKG(uint32(idx), vss.StatusComplaint)
 		}
 		// indicate to VSS that this dkg's new status is complaint for this
 		// deal
-		d.VerifiersMap[uint32(dd.Index)].UnsafeSetResponseDKG(uint32(d.Nidx), vss.StatusComplaint)
+		d.verifiersMap[uint32(dd.Index)].UnsafeSetResponseDKG(uint32(d.Nidx), vss.StatusComplaint)
 		resp.Status = vss.StatusComplaint
 		s, err := schnorr.Sign(d.Suite, d.Long, resp.Hash(d.Suite))
 		if err != nil {
@@ -387,12 +387,12 @@ func (d *DistKeyGenerator) ProcessDeal(dd *Deal) (*Response, error) {
 		}
 	}
 
-	// if the Dealer in the old list is also present in the new list, then set
+	// if the dealer in the old list is also present in the new list, then set
 	// his response to approval since he won't issue his own response for his
 	// own deal
 	newIdx, found := findPub(d.C.NewNodes, pub)
 	if found {
-		d.VerifiersMap[dd.Index].UnsafeSetResponseDKG(uint32(newIdx), vss.StatusApproval)
+		d.verifiersMap[dd.Index].UnsafeSetResponseDKG(uint32(newIdx), vss.StatusApproval)
 	}
 
 	return &Response{
@@ -410,9 +410,9 @@ func (d *DistKeyGenerator) ProcessResponse(resp *Response) (*Justification, erro
 	if d.IsResharing && d.CanIssue && !d.NewPresent {
 		return d.processResharingResponse(resp)
 	}
-	v, ok := d.VerifiersMap[resp.Index]
+	v, ok := d.verifiersMap[resp.Index]
 	if !ok {
-		return nil, fmt.Errorf("dkg: responses received for unknown Dealer %d", resp.Index)
+		return nil, fmt.Errorf("dkg: responses received for unknown dealer %d", resp.Index)
 	}
 
 	if err := v.ProcessResponse(resp.Response); err != nil {
@@ -443,7 +443,7 @@ func (d *DistKeyGenerator) ProcessResponse(resp *Response) (*Justification, erro
 }
 
 // special case when an node that is present in the old list but not in the
-// new,i.e. leaving the group. This node does not have any VerifiersMap since it
+// new,i.e. leaving the group. This node does not have any verifiersMap since it
 // can't receive shares. This function makes some check on the response and
 // returns a justification if the response is invalid.
 func (d *DistKeyGenerator) processResharingResponse(resp *Response) (*Justification, error) {
@@ -481,18 +481,18 @@ func (d *DistKeyGenerator) processResharingResponse(resp *Response) (*Justificat
 // ProcessJustification takes a justification and validates it. It returns an
 // error in case the justification is wrong.
 func (d *DistKeyGenerator) ProcessJustification(j *Justification) error {
-	v, ok := d.VerifiersMap[j.Index]
+	v, ok := d.verifiersMap[j.Index]
 	if !ok {
 		return errors.New("dkg: Justification received but no deal for it")
 	}
 	return v.ProcessJustification(j.Justification)
 }
 
-// SetTimeout triggers the Timeout on all VerifiersMap, and thus makes sure
-// all VerifiersMap have either responded, or have a StatusComplaint response.
+// SetTimeout triggers the Timeout on all verifiersMap, and thus makes sure
+// all verifiersMap have either responded, or have a StatusComplaint response.
 func (d *DistKeyGenerator) SetTimeout() {
 	d.Timeout = true
-	for _, v := range d.VerifiersMap {
+	for _, v := range d.verifiersMap {
 		v.SetTimeout()
 	}
 }
@@ -515,7 +515,7 @@ func (d *DistKeyGenerator) ThresholdCertified() bool {
 		// is).
 		return len(d.QUAL()) >= d.C.OldThreshold
 	}
-	// in dkg case, the threshold is symmetric -> # VerifiersMap = # dealers
+	// in dkg case, the threshold is symmetric -> # verifiersMap = # dealers
 	return len(d.QUAL()) >= d.C.Threshold
 }
 
@@ -560,7 +560,7 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 	var invalidSh = make(map[int]bool)
 	var invalidDeals = make(map[int]bool)
 	// compute list of invalid deals according to 1.
-	for dealerIndex, verifier := range d.VerifiersMap {
+	for dealerIndex, verifier := range d.verifiersMap {
 		responses := verifier.Responses()
 		if len(responses) == 0 {
 			// don't analyzes "empty" deals - i.e. dealers that never sent
@@ -578,7 +578,7 @@ func (d *DistKeyGenerator) QualifiedShares() []int {
 	}
 
 	// compute list of invalid share holders for valid deals
-	for dealerIndex, verifier := range d.VerifiersMap {
+	for dealerIndex, verifier := range d.verifiersMap {
 		// skip analyze of invalid deals
 		if _, present := invalidDeals[int(dealerIndex)]; present {
 			continue
@@ -649,7 +649,7 @@ func (d *DistKeyGenerator) isInQUAL(idx uint32) bool {
 }
 
 func (d *DistKeyGenerator) qualIter(fn func(idx uint32, v *vss.Verifier) bool) {
-	for i, v := range d.VerifiersMap {
+	for i, v := range d.verifiersMap {
 		if v.DealCertified() {
 			if !fn(i, v) {
 				break
@@ -788,9 +788,9 @@ func (d *DistKeyGenerator) resharingKey() (*DistKeyShare, error) {
 	}, nil
 }
 
-// verifiers returns the VerifiersMap keeping state of each deals
+// verifiers returns the verifiersMap keeping state of each deals
 func (d *DistKeyGenerator) Verifiers() map[uint32]*vss.Verifier {
-	return d.VerifiersMap
+	return d.verifiersMap
 }
 
 func (d *DistKeyGenerator) initVerifiers(c *Config) error {
@@ -812,7 +812,7 @@ func (d *DistKeyGenerator) initVerifiers(c *Config) error {
 		ver.SetThreshold(c.Threshold)
 		verifiers[uint32(i)] = ver
 	}
-	d.VerifiersMap = verifiers
+	d.verifiersMap = verifiers
 	return nil
 }
 

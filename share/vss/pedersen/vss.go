@@ -152,7 +152,7 @@ func NewDealer(suite Suite, longterm, secret kyber.Scalar, verifiers []kyber.Poi
 		return nil, err
 	}
 
-	d.Aggregator = newAggregator(d.Suite, d.Pub, d.Verifiers, d.SecretCommits, d.T, d.SessionIDField)
+	d.Aggregator = NewAggregator(d.Suite, d.Pub, d.Verifiers, d.SecretCommits, d.T, d.SessionIDField)
 	// C = F + G
 	d.Deals = make([]*Deal, len(d.Verifiers))
 	for i := range d.Verifiers {
@@ -564,7 +564,7 @@ type Aggregator struct {
 	Timeout        bool
 }
 
-func newAggregator(suite Suite, dealer kyber.Point, verifiers, commitments []kyber.Point, t int, sid []byte) *Aggregator {
+func NewAggregator(suite Suite, dealer kyber.Point, verifiers, commitments []kyber.Point, t int, sid []byte) *Aggregator {
 	agg := &Aggregator{
 		Suite:        suite,
 		Dealer:       dealer,

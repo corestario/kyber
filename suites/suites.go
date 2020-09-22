@@ -11,7 +11,7 @@ import (
 	"github.com/corestario/kyber"
 )
 
-// Suite is the sum of all suites mix-ins in Kyber.
+// suite is the sum of all suites mix-ins in Kyber.
 type Suite interface {
 	kyber.Encoding
 	kyber.Group
@@ -49,7 +49,7 @@ func Find(name string) (Suite, error) {
 func MustFind(name string) Suite {
 	s, err := Find(name)
 	if err != nil {
-		panic("Suite " + name + " not found.")
+		panic("suite " + name + " not found.")
 	}
 	return s
 }

@@ -5,7 +5,7 @@ import (
 	"github.com/corestario/kyber/pairing/bn256"
 )
 
-// SuiteBn256 is an adapter that implements the suites.Suite interface so that
+// SuiteBn256 is an adapter that implements the suites.suite interface so that
 // bn256 can be used as a common suite to generate key pairs for instance but
 // still preserves the properties of the pairing (e.g. the Pair function).
 //

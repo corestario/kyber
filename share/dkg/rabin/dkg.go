@@ -49,7 +49,7 @@ import (
 	vss "github.com/corestario/kyber/share/vss/rabin"
 )
 
-// Suite wraps the functionalities needed by the dkg package
+// suite wraps the functionalities needed by the dkg package
 type Suite vss.Suite
 
 // DistKeyShare holds the share of a distributed key for a participant.

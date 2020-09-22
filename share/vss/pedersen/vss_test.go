@@ -4,12 +4,12 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/group/edwards25519"
 	"github.com/corestario/kyber/sign/schnorr"
 	"github.com/corestario/kyber/xof/blake2xb"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.dedis.ch/protobuf"
 )
 

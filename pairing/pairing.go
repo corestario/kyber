@@ -2,7 +2,7 @@ package pairing
 
 import "github.com/corestario/kyber"
 
-// Suite interface represents a triplet of elliptic curve groups (G₁, G₂
+// suite interface represents a triplet of elliptic curve groups (G₁, G₂
 // and GT) such that there exists a function e(g₁ˣ,g₂ʸ)=gTˣʸ (where gₓ is a
 // generator of the respective group) which is called a pairing.
 type Suite interface {

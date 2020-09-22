@@ -1,10 +1,11 @@
 package dkg
 
 import (
-	"fmt"
 	"bytes"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
+
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/share"
 	vss "github.com/corestario/kyber/share/vss/pedersen"
@@ -40,9 +41,9 @@ func (d *DistKeyShare) Commitments() []kyber.Point {
 }
 
 // Deal holds the Deal for one participant as well as the index of the issuing
-// Dealer.
+// dealer.
 type Deal struct {
-	// Index of the Dealer in the list of participants
+	// Index of the dealer in the list of participants
 	Index uint32
 	// Deal issued for another participant
 	Deal *vss.EncryptedDeal
@@ -72,19 +73,19 @@ func (d *Deal) Decode(data []byte) error {
 }
 
 // Response holds the Response from another participant as well as the index of
-// the target Dealer.
+// the target dealer.
 type Response struct {
-	// Index of the Dealer for which this response is for
+	// Index of the dealer for which this response is for
 	Index uint32
 	// Response issued from another participant
 	Response *vss.Response
 }
 
-// Justification holds the Justification from a Dealer as well as the index of
-// the Dealer in question.
+// Justification holds the Justification from a dealer as well as the index of
+// the dealer in question.
 type Justification struct {
-	// Index of the Dealer who answered with this Justification
+	// Index of the dealer who answered with this Justification
 	Index uint32
-	// Justification issued from the Dealer
+	// Justification issued from the dealer
 	Justification *vss.Justification
 }

@@ -29,7 +29,7 @@ import (
 	"github.com/corestario/kyber/util/random"
 )
 
-// Suite wraps the functionalities needed by the shuffle/ package. These are the
+// suite wraps the functionalities needed by the shuffle/ package. These are the
 // same functionatlities needed by the proof/ package.
 type Suite proof.Suite
 

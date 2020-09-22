@@ -11,7 +11,7 @@ import (
 	"github.com/corestario/kyber"
 )
 
-// Suite defines the functionalities needed for this package to operate
+// suite defines the functionalities needed for this package to operate
 // correctly. It provides a general abstraction to easily change the underlying
 // implementations.
 type Suite interface {

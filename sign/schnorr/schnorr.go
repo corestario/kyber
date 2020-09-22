@@ -20,7 +20,7 @@ import (
 	"github.com/corestario/kyber"
 )
 
-// Suite represents the set of functionalities needed by the package schnorr.
+// suite represents the set of functionalities needed by the package schnorr.
 type Suite interface {
 	kyber.Group
 	kyber.Random

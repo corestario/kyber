@@ -10,7 +10,7 @@ import (
 	"github.com/corestario/kyber/util/random"
 )
 
-// Suite represents the functionalities that this package can test
+// suite represents the functionalities that this package can test
 type suite interface {
 	kyber.Group
 	kyber.HashFactory

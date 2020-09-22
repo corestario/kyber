@@ -13,7 +13,7 @@ type Generator interface {
 	NewKey(random cipher.Stream) kyber.Scalar
 }
 
-// Suite represents the list of functionalities needed by this package.
+// suite represents the list of functionalities needed by this package.
 type Suite interface {
 	kyber.Group
 	kyber.Random

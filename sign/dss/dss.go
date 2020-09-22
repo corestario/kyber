@@ -25,7 +25,7 @@ import (
 	"github.com/corestario/kyber/sign/schnorr"
 )
 
-// Suite represents the functionalities needed by the dss package
+// suite represents the functionalities needed by the dss package
 type Suite interface {
 	kyber.Group
 	kyber.HashFactory
