@@ -96,7 +96,7 @@ func BatchVerify(suite pairing.Suite, publics []kyber.Point, msgs [][]byte, sig 
 			return errors.New("bls: point needs to implement hashablePoint")
 		}
 		hm := hashable.Hash(msgs[i])
-		pair := suite.Pair(hm, publics[i])
+		pair := suite.Pair(publics[i], hm)
 
 		if i == 0 {
 			aggregatedLeft = pair
@@ -105,7 +105,7 @@ func BatchVerify(suite pairing.Suite, publics []kyber.Point, msgs [][]byte, sig 
 		}
 	}
 
-	right := suite.Pair(s, suite.G1().Point().Base())
+	right := suite.Pair(suite.G1().Point().Base(), s)
 	if !aggregatedLeft.Equal(right) {
 		return errors.New("bls: invalid signature")
 	}
@@ -122,12 +122,12 @@ func Verify(suite pairing.Suite, X kyber.Point, msg, sig []byte) error {
 		return errors.New("bls: point needs to implement hashablePoint")
 	}
 	HM := hashable.Hash(msg)
-	left := suite.Pair(HM, X)
+	left := suite.Pair(X, HM)
 	s := suite.G2().Point()
 	if err := s.UnmarshalBinary(sig); err != nil {
 		return err
 	}
-	right := suite.Pair(s, suite.G1().Point().Base())
+	right := suite.Pair(suite.G1().Point().Base(), s)
 	if !left.Equal(right) {
 		return errors.New("bls: invalid signature")
 	}
