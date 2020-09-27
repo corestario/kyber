@@ -117,19 +117,20 @@ type Justification struct {
 // RECOMMENDED to use a threshold higher or equal than what the method
 // MinimumT() returns, otherwise it breaks the security assumptions of the whole
 // scheme. It returns an error if the t is less than or equal to 2.
-func NewDealer(suite Suite, longterm, secret kyber.Scalar, verifiers []kyber.Point, t int) (*Dealer, error) {
+func NewDealer(suite Suite, longterm, secret kyber.Scalar, verifiers []kyber.Point, t int, reader cipher.Stream) (*Dealer, error) {
 	d := &Dealer{
 		suite:     suite,
 		long:      longterm,
 		secret:    secret,
 		verifiers: verifiers,
+		reader:    reader,
 	}
 	if !validT(t, verifiers) {
 		return nil, fmt.Errorf("dealer: t %d invalid", t)
 	}
 	d.t = t
 
-	f := share.NewPriPoly(d.suite, d.t, d.secret, suite.RandomStream())
+	f := share.NewPriPoly(d.suite, d.t, d.secret, reader)
 	d.pub = d.suite.Point().Mul(d.long, nil)
 
 	// Compute public polynomial coefficients
@@ -181,7 +182,7 @@ func (d *Dealer) EncryptedDeal(i int) (*EncryptedDeal, error) {
 		return nil, errors.New("dealer: wrong index to generate encrypted deal")
 	}
 	// gen ephemeral key
-	dhSecret := d.suite.Scalar().Pick(d.suite.RandomStream())
+	dhSecret := d.suite.Scalar().Pick(d.reader)
 	dhPublic := d.suite.Point().Mul(dhSecret, nil)
 	// signs the public key
 	dhPublicBuff, _ := dhPublic.MarshalBinary()

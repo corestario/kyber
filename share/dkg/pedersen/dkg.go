@@ -173,7 +173,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 	if c.Share != nil {
 		// resharing case
 		secretCoeff := c.Share.Share.V
-		dealer, err = vss.NewDealer(c.Suite, c.Longterm, secretCoeff, c.NewNodes, newThreshold)
+		dealer, err = vss.NewDealer(c.Suite, c.Longterm, secretCoeff, c.NewNodes, newThreshold, random.New(c.Reader))
 		canIssue = true
 	} else if !isResharing && newPresent {
 		// fresh DKG case
@@ -185,7 +185,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 			randomStream = random.New(c.Reader)
 		}
 		secretCoeff := c.Suite.Scalar().Pick(randomStream)
-		dealer, err = vss.NewDealer(c.Suite, c.Longterm, secretCoeff, c.NewNodes, newThreshold)
+		dealer, err = vss.NewDealer(c.Suite, c.Longterm, secretCoeff, c.NewNodes, newThreshold, randomStream)
 		canIssue = true
 		c.OldNodes = c.NewNodes
 		oidx, oldPresent = findPub(c.OldNodes, pub)
@@ -242,12 +242,14 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 
 // NewDistKeyGenerator returns a dist key generator ready to create a fresh
 // distributed key with the regular DKG protocol.
-func NewDistKeyGenerator(suite Suite, longterm kyber.Scalar, participants []kyber.Point, t int) (*DistKeyGenerator, error) {
+func NewDistKeyGenerator(suite Suite, longterm kyber.Scalar, participants []kyber.Point, t int, reader io.Reader) (*DistKeyGenerator, error) {
 	c := &Config{
-		Suite:     suite,
-		Longterm:  longterm,
-		NewNodes:  participants,
-		Threshold: t,
+		Suite:          suite,
+		Longterm:       longterm,
+		NewNodes:       participants,
+		Threshold:      t,
+		Reader:         reader,
+		UserReaderOnly: true,
 	}
 	return NewDistKeyHandler(c)
 }
