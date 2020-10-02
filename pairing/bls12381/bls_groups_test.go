@@ -270,19 +270,6 @@ func TestKyberGT(t *testing.T) {
 	GroupTest(t, NewGroupGT())
 }
 
-func TestGT(t *testing.T) {
-	q := newEmptyGT().Base()
-	//q := newEmptyGT().Base()
-	s := NewGroupGT().Scalar().SetInt64(2)
-	p := newEmptyGT()
-	p.Mul(s, q)
-	pp := newEmptyGT()
-	pp.Add(q, q)
-	t.Log(p.Equal(q))
-	t.Log(pp.Equal(q))
-	t.Log(pp.Equal(p))
-}
-
 func TestKyberPairingG2(t *testing.T) {
 	s := NewBLS12381Suite().(*Suite)
 	a := s.G1().Scalar().Pick(s.RandomStream())

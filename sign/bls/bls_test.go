@@ -4,16 +4,18 @@ import (
 	"crypto/rand"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/corestario/kyber"
+	curve "github.com/corestario/kyber/pairing/bls12381"
 	"github.com/corestario/kyber/pairing/bn256"
 	"github.com/corestario/kyber/util/random"
+	"github.com/stretchr/testify/require"
 )
 
 func TestBLS(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private, public := NewKeyPair(suite, random.New())
+
 	sig, err := Sign(suite, private, msg)
 	require.Nil(t, err)
 	err = Verify(suite, public, msg, sig)
@@ -22,7 +24,7 @@ func TestBLS(t *testing.T) {
 
 func TestBLSFailSig(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private, public := NewKeyPair(suite, random.New())
 	sig, err := Sign(suite, private, msg)
 	require.Nil(t, err)
@@ -34,7 +36,7 @@ func TestBLSFailSig(t *testing.T) {
 
 func TestBLSFailKey(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private, _ := NewKeyPair(suite, random.New())
 	sig, err := Sign(suite, private, msg)
 	require.Nil(t, err)
@@ -46,7 +48,7 @@ func TestBLSFailKey(t *testing.T) {
 
 func TestBLSAggregateSignatures(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg)
@@ -64,7 +66,7 @@ func TestBLSAggregateSignatures(t *testing.T) {
 
 func TestBLSFailAggregatedSig(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg)
@@ -80,9 +82,10 @@ func TestBLSFailAggregatedSig(t *testing.T) {
 		t.Fatal("bls: verification succeeded unexpectedly")
 	}
 }
+
 func TestBLSFailAggregatedKey(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	_, public3 := NewKeyPair(suite, random.New())
@@ -98,10 +101,11 @@ func TestBLSFailAggregatedKey(t *testing.T) {
 		t.Fatal("bls: verification succeeded unexpectedly")
 	}
 }
+
 func TestBLSBatchVerify(t *testing.T) {
 	msg1 := []byte("Hello Boneh-Lynn-Shacham")
 	msg2 := []byte("Hello Dedis & Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg1)
@@ -114,10 +118,11 @@ func TestBLSBatchVerify(t *testing.T) {
 	err = BatchVerify(suite, []kyber.Point{public1, public2}, [][]byte{msg1, msg2}, aggregatedSig)
 	require.Nil(t, err)
 }
+
 func TestBLSFailBatchVerify(t *testing.T) {
 	msg1 := []byte("Hello Boneh-Lynn-Shacham")
 	msg2 := []byte("Hello Dedis & Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg1)
