@@ -86,7 +86,7 @@ func Recover(suite pairing.Suite, public *share.PubPoly, msg []byte, sigs [][]by
 		if err = bls.Verify(suite, public.Eval(i).V, msg, s.Value()); err != nil {
 			return nil, err
 		}
-		point := suite.G1().Point()
+		point := suite.G2().Point()
 		if err := point.UnmarshalBinary(s.Value()); err != nil {
 			return nil, err
 		}
@@ -95,7 +95,7 @@ func Recover(suite pairing.Suite, public *share.PubPoly, msg []byte, sigs [][]by
 			break
 		}
 	}
-	commit, err := share.RecoverCommit(suite.G1(), pubShares, t, n)
+	commit, err := share.RecoverCommit(suite.G2(), pubShares, t, n)
 	if err != nil {
 		return nil, err
 	}
