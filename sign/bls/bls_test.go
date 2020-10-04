@@ -6,7 +6,6 @@ import (
 
 	"github.com/corestario/kyber"
 	curve "github.com/corestario/kyber/pairing/bls12381"
-	"github.com/corestario/kyber/pairing/bn256"
 	"github.com/corestario/kyber/util/random"
 	"github.com/stretchr/testify/require"
 )
@@ -154,7 +153,7 @@ func TestBLSFailBatchVerify(t *testing.T) {
 }
 
 func BenchmarkBLSKeyCreation(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		NewKeyPair(suite, random.New())
@@ -162,7 +161,7 @@ func BenchmarkBLSKeyCreation(b *testing.B) {
 }
 
 func BenchmarkBLSSign(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private, _ := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
 	b.ResetTimer()
@@ -172,7 +171,7 @@ func BenchmarkBLSSign(b *testing.B) {
 }
 
 func BenchmarkBLSAggregateSigs(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, _ := NewKeyPair(suite, random.New())
 	private2, _ := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
@@ -188,7 +187,7 @@ func BenchmarkBLSAggregateSigs(b *testing.B) {
 }
 
 func BenchmarkBLSVerifyAggregate(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
@@ -205,7 +204,7 @@ func BenchmarkBLSVerifyAggregate(b *testing.B) {
 }
 
 func BenchmarkBLSVerifyBatchVerify(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 
 	numSigs := 100
 	privates := make([]kyber.Scalar, numSigs)
@@ -232,7 +231,7 @@ func BenchmarkBLSVerifyBatchVerify(b *testing.B) {
 }
 
 func TestBinaryMarshalAfterAggregation_issue400(t *testing.T) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite()
 
 	_, public1 := NewKeyPair(suite, random.New())
 	_, public2 := NewKeyPair(suite, random.New())
@@ -242,7 +241,7 @@ func TestBinaryMarshalAfterAggregation_issue400(t *testing.T) {
 	workingBits, err := workingKey.MarshalBinary()
 	require.Nil(t, err)
 
-	workingPoint := suite.G2().Point()
+	workingPoint := suite.G1().Point()
 	err = workingPoint.UnmarshalBinary(workingBits)
 	require.Nil(t, err)
 
@@ -252,7 +251,7 @@ func TestBinaryMarshalAfterAggregation_issue400(t *testing.T) {
 	bits, err := aggregatedKey.MarshalBinary()
 	require.Nil(t, err)
 
-	point := suite.G2().Point()
+	point := suite.G1().Point()
 	err = point.UnmarshalBinary(bits)
 	require.Nil(t, err)
 }
