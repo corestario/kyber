@@ -30,8 +30,7 @@ func (k *KyberGT) Equal(kk kyber.Point) bool {
 const gtLength = 576
 
 func (k *KyberGT) Null() kyber.Point {
-	var zero [gtLength]byte
-	k.f, _ = bls12381.NewGT().FromBytes(zero[:])
+	k.f = bls12381.NewGT().New()
 	return k
 }
 
@@ -42,16 +41,9 @@ func (k *KyberGT) Base() kyber.Point {
 	e.AddPair(g1, g2)
 	k.f = e.Result()
 	return k
-	/*var baseReader, _ = blake2b.NewXOF(0, []byte("Quand il y a à manger pour huit, il y en a bien pour dix."))*/
-	//_, err := NewGT().rand(baseReader)
-	//if err != nil {
-	//panic(err)
-	//}
-	/*return k*/
 }
 
 func (k *KyberGT) Pick(rand cipher.Stream) kyber.Point {
-	//panic("TODO: bls12-381.GT.Pick()")
 	s := mod.NewInt64(0, bls12381.NewGT().Q()).Pick(rand)
 	k.Base()
 	bls12381.NewGT().Exp(k.f, k.f, &s.(*mod.Int).V)
@@ -79,20 +71,18 @@ func (k *KyberGT) Add(a, b kyber.Point) kyber.Point {
 func (k *KyberGT) Sub(a, b kyber.Point) kyber.Point {
 	aa := a.(*KyberGT)
 	bb := b.(*KyberGT)
-	bls12381.NewGT().Sub(k.f, aa.f, bb.f)
+	bls12381.NewGT().Inverse(k.f, bb.f)
+	bls12381.NewGT().Mul(k.f, aa.f, k.f)
 	return k
 }
 
 func (k *KyberGT) Neg(q kyber.Point) kyber.Point {
-	//panic("bls12-381: GT is not a full kyber.Point implementation")
-	aa := newEmptyGT().Null().(*KyberGT)
-	bb := q.(*KyberGT)
-	bls12381.NewGT().Sub(k.f, aa.f, bb.f)
+	aa := q.(*KyberGT)
+	bls12381.NewGT().Inverse(k.f, aa.f)
 	return k
 }
 
 func (k *KyberGT) Mul(s kyber.Scalar, q kyber.Point) kyber.Point {
-	//panic("bls12-381: GT is not a full kyber.Point implementation")
 	if q == nil {
 		q = newEmptyGT().Base()
 	}

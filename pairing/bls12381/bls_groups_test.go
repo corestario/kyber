@@ -71,14 +71,7 @@ func testGroup(t *testing.T, g kyber.Group, rand cipher.Stream) []kyber.Point {
 	}
 
 	// Verify additive and multiplicative identities of the generator.
-	// TODO: Check GT exp
-	/*fmt.Println("Inverse of base")*/
-	//f := ptmp.Base().(*KyberGT).f
-	//newFp12(nil).inverse(f, f)
-	//fmt.Printf("\n-Inverse: %v\n", f)
-	//fmt.Println("Multiply by -1")
 	ptmp.Mul(stmp.SetInt64(-1), nil).Add(ptmp, gen)
-	/*fmt.Printf(" \n\nChecking equality additive identity\nptmp: %v \n\n zero %v\n", ptmp, pzero)*/
 	if !ptmp.Equal(pzero) {
 		t.Fatalf("generator additive identity doesn't work: (scalar -1 %v) %v (x) -1 (+) %v = %v != %v the group point identity",
 			stmp.SetInt64(-1), ptmp.Mul(stmp.SetInt64(-1), nil), gen, ptmp.Mul(stmp.SetInt64(-1), nil).Add(ptmp, gen), pzero)
@@ -108,7 +101,6 @@ func testGroup(t *testing.T, g kyber.Group, rand cipher.Stream) []kyber.Point {
 		t.Fatalf("Diffie-Hellman didn't work: %v == %v (x) %v != %v (x) %v == %v", dh1, s2, p1, s1, p2, dh2)
 	}
 	points = append(points, dh1)
-	//t.Logf("shared secret = %v", dh1)
 
 	// Test secret inverse to get from dh1 back to p1
 	if primeOrder {
@@ -119,7 +111,6 @@ func testGroup(t *testing.T, g kyber.Group, rand cipher.Stream) []kyber.Point {
 	}
 
 	// Zero and One identity secrets
-	//println("dh1^0 = ",ptmp.Mul(dh1, szero).String())
 	if !ptmp.Mul(szero, dh1).Equal(pzero) {
 		t.Fatalf("Encryption with secret=0 didn't work: %v (x) %v == %v != %v", szero, dh1, ptmp, pzero)
 	}
@@ -174,23 +165,10 @@ func testGroup(t *testing.T, g kyber.Group, rand cipher.Stream) []kyber.Point {
 		}
 	}
 
-	pick := func(rand cipher.Stream) (p kyber.Point) {
-		defer func() {
-			/*if err := recover(); err != nil {*/
-			//// TODO implement Pick for GT
-			//p = g.Point().Mul(g.Scalar().Pick(rand), nil)
-			//return
-			/*}*/
-		}()
-		p = g.Point().Pick(rand)
-		return
-	}
-
 	// Test randomly picked points
 	last := gen
 	for i := 0; i < 5; i++ {
-		// TODO fork kyber and make that an interface
-		rgen := pick(rand)
+		rgen := g.Point().Pick(rand)
 		if rgen.Equal(last) {
 			t.Fatalf("Pick() not producing unique points: got %v twice", rgen)
 		}
@@ -228,7 +206,7 @@ func testGroup(t *testing.T, g kyber.Group, rand cipher.Stream) []kyber.Point {
 		}
 
 		buf.Reset()
-		p := pick(rand)
+		p := g.Point().Pick(rand)
 		if _, err := p.MarshalTo(buf); err != nil {
 			t.Fatalf("encoding of point fails: " + err.Error())
 		}
@@ -268,6 +246,19 @@ func TestKyberG2(t *testing.T) {
 
 func TestKyberGT(t *testing.T) {
 	GroupTest(t, NewGroupGT())
+}
+
+func TestGenZero(t *testing.T) {
+	g := NewGroupGT()
+	gen := g.Point().Base()
+	zero := g.Point().Null()
+	p := g.Point().Base()
+	q := g.Point().Base()
+	t.Log(p.Equal(q))
+	p.Mul(g.Scalar().SetInt64(-1), p)
+	q.Add(p, gen)
+	t.Log(q.Equal(zero))
+	t.Log(q.Equal(gen))
 }
 
 func TestKyberPairingG2(t *testing.T) {
