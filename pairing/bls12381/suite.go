@@ -1,4 +1,4 @@
-package bls
+package bls12381
 
 import (
 	"crypto/cipher"
@@ -12,7 +12,7 @@ import (
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/util/random"
 	"github.com/corestario/kyber/xof/blake2xb"
-	bls12381 "github.com/kilic/bls12-381"
+	bls "github.com/kilic/bls12-381"
 )
 
 // GroupChecker allows to verify if a Point is in the correct group or not. For
@@ -72,7 +72,7 @@ func (g *groupBls) RandomStream() cipher.Stream {
 func NewGroupG1() kyber.Group {
 	return &groupBls{
 		str:      "bls12-381.G1",
-		newPoint: func() kyber.Point { return NullKyberG1() },
+		newPoint: func() kyber.Point { return newPointG1() },
 		isPrime:  true,
 	}
 }
@@ -80,7 +80,7 @@ func NewGroupG1() kyber.Group {
 func NewGroupG2() kyber.Group {
 	return &groupBls{
 		str:      "bls12-381.G2",
-		newPoint: func() kyber.Point { return NullKyberG2() },
+		newPoint: func() kyber.Point { return newPointG2() },
 		isPrime:  false,
 	}
 }
@@ -88,13 +88,13 @@ func NewGroupG2() kyber.Group {
 func NewGroupGT() kyber.Group {
 	return &groupBls{
 		str:      "bls12-381.GT",
-		newPoint: func() kyber.Point { return newEmptyGT() },
+		newPoint: func() kyber.Point { return newPointGT() },
 		isPrime:  false,
 	}
 }
 
 type Suite struct {
-	e *bls12381.Engine
+	e *bls.Engine
 }
 
 func (s *Suite) String() string {
@@ -118,7 +118,7 @@ func (s *Suite) Point() kyber.Point {
 }
 
 func NewBLS12381Suite() pairing.Suite {
-	return &Suite{e: bls12381.NewEngine()}
+	return &Suite{e: bls.NewEngine()}
 }
 
 func (s *Suite) G1() kyber.Group {
@@ -135,15 +135,15 @@ func (s *Suite) GT() kyber.Group {
 
 // ValidatePairing implements the `pairing.Suite` interface
 func (s *Suite) ValidatePairing(p1, p2, p3, p4 kyber.Point) bool {
-	s.e.AddPair(p1.(*KyberG1).p, p2.(*KyberG2).p)
-	s.e.AddPairInv(p3.(*KyberG1).p, p4.(*KyberG2).p)
+	s.e.AddPair(p1.(*pointG1).p, p2.(*pointG2).p)
+	s.e.AddPairInv(p3.(*pointG1).p, p4.(*pointG2).p)
 	return s.e.Check()
 }
 
 func (s *Suite) Pair(p1, p2 kyber.Point) kyber.Point {
-	g1point := p1.(*KyberG1).p
-	g2point := p2.(*KyberG2).p
-	gt := newKyberGT(s.e.AddPair(g1point, g2point).Result())
+	g1point := p1.(*pointG1).p
+	g2point := p2.(*pointG2).p
+	gt := toPointGT(s.e.AddPair(g1point, g2point).Result())
 	return gt
 }
 
