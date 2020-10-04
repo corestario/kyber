@@ -28,18 +28,19 @@ func (k *KyberG1) Equal(k2 kyber.Point) bool {
 }
 
 func (k *KyberG1) Null() kyber.Point {
-	return newKyberG1(bls12381.NewG1().Zero())
+	k.Set(newKyberG1(bls12381.NewG1().Zero()))
+	return k
 }
 
 func (k *KyberG1) Base() kyber.Point {
-	return newKyberG1(bls12381.NewG1().One())
+	k.Set(newKyberG1(bls12381.NewG1().One()))
+	return k
 }
 
 func (k *KyberG1) Pick(rand cipher.Stream) kyber.Point {
-	//panic("not implemented")
-	var dst, src [32]byte
-	rand.XORKeyStream(dst[:], src[:])
-	return k.Hash(dst[:])
+	s := mod.NewInt64(0, bls12381.NewG1().Q()).Pick(rand)
+	k.Mul(s, nil)
+	return k
 }
 
 func (k *KyberG1) Set(q kyber.Point) kyber.Point {

@@ -10,6 +10,7 @@ import (
 	bls12381 "github.com/kilic/bls12-381"
 )
 
+// KyberGT is a kyber.Point holding a G1 point on BLS12-381 curve
 type KyberGT struct {
 	f *bls12381.E
 }
