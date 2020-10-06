@@ -1,5 +1,8 @@
-[![Docs](https://img.shields.io/badge/docs-current-brightgreen.svg)](https://godoc.org/github.com/corestario/kyber)
-[![Build Status](https://travis-ci.org/dedis/kyber.svg?branch=master)](https://travis-ci.org/dedis/kyber)
+This is a fork of DEDIS/kyber library of advanced cryptographic primitives for go, branching out in January of 2019.
+
+Changes include modifications to the DKG routine, making it use deterministic seed instead of `urandom`, and working with ethereum's version of bls12-381.
+
+
 
 DEDIS Advanced Crypto Library for Go
 ====================================
