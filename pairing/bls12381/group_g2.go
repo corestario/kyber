@@ -3,8 +3,9 @@ package bls12381
 import (
 	"crypto/cipher"
 	"crypto/sha256"
-	"encoding/hex"
+	"fmt"
 	"io"
+	"math/big"
 
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/group/mod"
@@ -13,7 +14,7 @@ import (
 
 // Domain comes from the ciphersuite used by the RFC of this name compatible
 // with the paired library > v18
-var Domain = []byte("BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_")
+var Domain = []byte("BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_")
 
 // pointG2 is a kyber.Point holding a G2 point on BLS12-381 curve
 type pointG2 struct {
@@ -132,8 +133,20 @@ func (k *pointG2) MarshalSize() int {
 }
 
 func (k *pointG2) String() string {
-	b, _ := k.MarshalBinary()
-	return "bls12-381.G1: " + hex.EncodeToString(b)
+	G2 := bls.NewG2()
+	b := newPointG2()
+	b.Set(k)
+	b.p = G2.Affine(b.p)
+	coordinates := bls.NewG2().ToBytes(b.p)
+	x1Bytes := coordinates[:48]
+	x2Bytes := coordinates[48:96]
+	y1Bytes := coordinates[96:144]
+	y2Bytes := coordinates[144:]
+	x1 := new(big.Int).SetBytes(x1Bytes)
+	x2 := new(big.Int).SetBytes(x2Bytes)
+	y1 := new(big.Int).SetBytes(y1Bytes)
+	y2 := new(big.Int).SetBytes(y2Bytes)
+	return fmt.Sprintf("bls12-381.G2: (i * 0x%s + 0x%s, i * 0x%s + 0x%s)", x1.Text(16), x2.Text(16), y1.Text(16), y2.Text(16))
 }
 
 func (k *pointG2) Hash(m []byte) kyber.Point {

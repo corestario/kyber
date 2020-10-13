@@ -2,8 +2,9 @@ package bls12381
 
 import (
 	"crypto/cipher"
-	"encoding/hex"
+	"fmt"
 	"io"
+	"math/big"
 
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/group/mod"
@@ -127,15 +128,23 @@ func (k *pointG1) MarshalSize() int {
 }
 
 func (k *pointG1) String() string {
-	b, _ := k.MarshalBinary()
-	return "bls12-381.G1: " + hex.EncodeToString(b)
+	G1 := bls.NewG1()
+	b := newPointG1()
+	b.Set(k)
+	b.p = G1.Affine(b.p)
+	coordinates := G1.ToBytes(b.p)
+	xBytes := coordinates[:48]
+	yBytes := coordinates[48:]
+	x := new(big.Int).SetBytes(xBytes)
+	y := new(big.Int).SetBytes(yBytes)
+	return fmt.Sprintf("bls12-381.G1: (0x%s, 0x%s)", x.Text(16), y.Text(16))
 }
 
 func (k *pointG1) Hash(m []byte) kyber.Point {
-	p, _ := bls.NewG1().HashToCurve(m, Domain)
+	g1Domain := []byte("BLS_SIG_BLS12381G1_XMD:SHA-256_SSWU_RO_POP_")
+	p, _ := bls.NewG1().HashToCurve(m, g1Domain)
 	k.p = p
 	return k
-
 }
 
 func (k *pointG1) IsInCorrectGroup() bool {
