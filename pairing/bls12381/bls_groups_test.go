@@ -248,8 +248,10 @@ func TestKyberGT(t *testing.T) {
 	GroupTest(t, NewGroupGT())
 }
 
+const SEED = "somestandart_seed_with_32_length"
+
 func TestKyberPairingG2(t *testing.T) {
-	s := NewBLS12381Suite().(*Suite)
+	s := NewBLS12381Suite([]byte(SEED)).(*Suite)
 	a := s.G1().Scalar().Pick(s.RandomStream())
 	b := s.G2().Scalar().Pick(s.RandomStream())
 	aG := s.G1().Point().Mul(a, nil)
@@ -270,7 +272,7 @@ func TestKyberPairingG2(t *testing.T) {
 }
 
 func BenchmarkPairingSeparate(bb *testing.B) {
-	s := NewBLS12381Suite().(*Suite)
+	s := NewBLS12381Suite([]byte(SEED)).(*Suite)
 	a := s.G1().Scalar().Pick(s.RandomStream())
 	b := s.G2().Scalar().Pick(s.RandomStream())
 	aG := s.G1().Point().Mul(a, nil)
@@ -291,7 +293,7 @@ func BenchmarkPairingSeparate(bb *testing.B) {
 }
 
 func BenchmarkPairingInv(bb *testing.B) {
-	s := NewBLS12381Suite().(*Suite)
+	s := NewBLS12381Suite([]byte(SEED)).(*Suite)
 	a := s.G1().Scalar().Pick(s.RandomStream())
 	b := s.G2().Scalar().Pick(s.RandomStream())
 	aG := s.G1().Point().Mul(a, nil)
@@ -307,9 +309,9 @@ func BenchmarkPairingInv(bb *testing.B) {
 }
 
 func TestIsValidGroup(t *testing.T) {
-	suite := NewBLS12381Suite()
-	p1 := suite.G1().Point().Pick(random.New())
-	p2 := suite.G1().Point().Pick(random.New())
+	suite := NewBLS12381Suite([]byte(SEED))
+	p1 := suite.Point().Pick(random.New())
+	p2 := suite.Point().Pick(random.New())
 
 	require.True(t, p1.(GroupChecker).IsInCorrectGroup())
 	require.True(t, p2.(GroupChecker).IsInCorrectGroup())

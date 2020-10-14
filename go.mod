@@ -7,6 +7,7 @@ require (
 	go.dedis.ch/protobuf v1.0.11
 	golang.org/x/crypto v0.0.0-20190123085648-057139ce5d2b
 	golang.org/x/sys v0.0.0-20191025090151-53bf42e6b339
+	lukechampine.com/frand v1.3.0
 )
 
 go 1.12

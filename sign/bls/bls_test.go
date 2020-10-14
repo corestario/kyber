@@ -2,6 +2,7 @@ package bls
 
 import (
 	"crypto/rand"
+	"github.com/corestario/kyber/pairing"
 	"testing"
 
 	"github.com/corestario/kyber"
@@ -10,9 +11,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const SEED = "somestandart_seed_with_32_length"
+
 func TestBLS(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private, public := NewKeyPair(suite, random.New())
 
 	sig, err := Sign(suite, private, msg)
@@ -23,7 +26,7 @@ func TestBLS(t *testing.T) {
 
 func TestBLSFailSig(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private, public := NewKeyPair(suite, random.New())
 	sig, err := Sign(suite, private, msg)
 	require.Nil(t, err)
@@ -35,7 +38,7 @@ func TestBLSFailSig(t *testing.T) {
 
 func TestBLSFailKey(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private, _ := NewKeyPair(suite, random.New())
 	sig, err := Sign(suite, private, msg)
 	require.Nil(t, err)
@@ -47,7 +50,7 @@ func TestBLSFailKey(t *testing.T) {
 
 func TestBLSAggregateSignatures(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg)
@@ -65,7 +68,7 @@ func TestBLSAggregateSignatures(t *testing.T) {
 
 func TestBLSFailAggregatedSig(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg)
@@ -84,7 +87,7 @@ func TestBLSFailAggregatedSig(t *testing.T) {
 
 func TestBLSFailAggregatedKey(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	_, public3 := NewKeyPair(suite, random.New())
@@ -104,7 +107,7 @@ func TestBLSFailAggregatedKey(t *testing.T) {
 func TestBLSBatchVerify(t *testing.T) {
 	msg1 := []byte("Hello Boneh-Lynn-Shacham")
 	msg2 := []byte("Hello Dedis & Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg1)
@@ -121,7 +124,7 @@ func TestBLSBatchVerify(t *testing.T) {
 func TestBLSFailBatchVerify(t *testing.T) {
 	msg1 := []byte("Hello Boneh-Lynn-Shacham")
 	msg2 := []byte("Hello Dedis & Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg1)
@@ -153,7 +156,7 @@ func TestBLSFailBatchVerify(t *testing.T) {
 }
 
 func BenchmarkBLSKeyCreation(b *testing.B) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		NewKeyPair(suite, random.New())
@@ -161,7 +164,7 @@ func BenchmarkBLSKeyCreation(b *testing.B) {
 }
 
 func BenchmarkBLSSign(b *testing.B) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private, _ := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
 	b.ResetTimer()
@@ -171,7 +174,7 @@ func BenchmarkBLSSign(b *testing.B) {
 }
 
 func BenchmarkBLSAggregateSigs(b *testing.B) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, _ := NewKeyPair(suite, random.New())
 	private2, _ := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
@@ -187,7 +190,7 @@ func BenchmarkBLSAggregateSigs(b *testing.B) {
 }
 
 func BenchmarkBLSVerifyAggregate(b *testing.B) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
@@ -204,7 +207,7 @@ func BenchmarkBLSVerifyAggregate(b *testing.B) {
 }
 
 func BenchmarkBLSVerifyBatchVerify(b *testing.B) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 
 	numSigs := 100
 	privates := make([]kyber.Scalar, numSigs)
@@ -231,7 +234,7 @@ func BenchmarkBLSVerifyBatchVerify(b *testing.B) {
 }
 
 func TestBinaryMarshalAfterAggregation_issue400(t *testing.T) {
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 
 	_, public1 := NewKeyPair(suite, random.New())
 	_, public2 := NewKeyPair(suite, random.New())
