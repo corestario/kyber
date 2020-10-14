@@ -3,16 +3,16 @@ package bls12381
 import (
 	"crypto/cipher"
 	"crypto/sha256"
+	vss "github.com/corestario/kyber/share/vss/pedersen"
 	"hash"
 	"io"
 	"reflect"
-
-	pairing "github.com/corestario/kyber/pairing"
 
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/util/random"
 	"github.com/corestario/kyber/xof/blake2xb"
 	bls "github.com/kilic/bls12-381"
+	"lukechampine.com/frand"
 )
 
 // GroupChecker allows to verify if a Point is in the correct group or not. For
@@ -94,7 +94,8 @@ func NewGroupGT() kyber.Group {
 }
 
 type Suite struct {
-	e *bls.Engine
+	e      *bls.Engine
+	stream cipher.Stream
 }
 
 func (s *Suite) String() string {
@@ -117,8 +118,17 @@ func (s *Suite) Point() kyber.Point {
 	return s.G1().Point()
 }
 
-func NewBLS12381Suite() pairing.Suite {
-	return &Suite{e: bls.NewEngine()}
+func NewBLS12381Suite(seed []byte) vss.Suite {
+	var stream cipher.Stream
+	if len(seed) > 0 {
+		stream = random.New(
+			frand.NewCustom(seed, 32, 20),
+		)
+	} else {
+		stream = random.New()
+	}
+
+	return &Suite{e: bls.NewEngine(), stream: stream}
 }
 
 func (s *Suite) G1() kyber.Group {
@@ -175,5 +185,5 @@ func (s *Suite) XOF(seed []byte) kyber.XOF {
 // RandomStream returns a cipher.Stream which corresponds to a key stream from
 // crypto/rand.
 func (s *Suite) RandomStream() cipher.Stream {
-	return random.New()
+	return s.stream
 }

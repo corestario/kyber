@@ -3,15 +3,16 @@ package dkg
 import (
 	"crypto/rand"
 	"fmt"
+	"lukechampine.com/frand"
 	mathRand "math/rand"
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/group/edwards25519"
 	"github.com/corestario/kyber/share"
 	vss "github.com/corestario/kyber/share/vss/pedersen"
+	"github.com/stretchr/testify/require"
 )
 
 var suite = edwards25519.NewBlakeSHA256Ed25519()
@@ -19,6 +20,8 @@ var suite = edwards25519.NewBlakeSHA256Ed25519()
 const defaultN = 5
 
 var defaultT = vss.MinimumT(defaultN)
+
+const SEED = "somestandart_seed_with_32_length"
 
 func generate(n, t int) (partPubs []kyber.Point, partSec []kyber.Scalar, dkgs []*DistKeyGenerator) {
 	partPubs = make([]kyber.Point, n)
@@ -29,8 +32,9 @@ func generate(n, t int) (partPubs []kyber.Point, partSec []kyber.Scalar, dkgs []
 		partSec[i] = sec
 	}
 	dkgs = make([]*DistKeyGenerator, n)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := 0; i < n; i++ {
-		dkg, err := NewDistKeyGenerator(suite, partSec[i], partPubs, t)
+		dkg, err := NewDistKeyGenerator(suite, partSec[i], partPubs, t, reader)
 		if err != nil {
 			panic(err)
 		}
@@ -43,7 +47,8 @@ func TestDKGNewDistKeyGenerator(t *testing.T) {
 	partPubs, partSec, _ := generate(defaultN, defaultT)
 
 	long := partSec[0]
-	dkg, err := NewDistKeyGenerator(suite, long, partPubs, defaultT)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
+	dkg, err := NewDistKeyGenerator(suite, long, partPubs, defaultT, reader)
 	require.Nil(t, err)
 	require.NotNil(t, dkg.dealer)
 	require.True(t, dkg.canIssue)
@@ -55,7 +60,7 @@ func TestDKGNewDistKeyGenerator(t *testing.T) {
 	require.False(t, dkg.isResharing)
 
 	sec, _ := genPair()
-	_, err = NewDistKeyGenerator(suite, sec, partPubs, defaultT)
+	_, err = NewDistKeyGenerator(suite, sec, partPubs, defaultT, reader)
 	require.Error(t, err)
 }
 
@@ -265,6 +270,7 @@ func TestDKGResharingThreshold(t *testing.T) {
 	newPubs[len(dkgs)] = newPub
 	newDkgs := make([]*DistKeyGenerator, newN)
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := range dkgs {
 		c := &Config{
 			Suite:        suite,
@@ -274,6 +280,7 @@ func TestDKGResharingThreshold(t *testing.T) {
 			Share:        shares[i],
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		newDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -407,8 +414,9 @@ func TestDKGThreshold(t *testing.T) {
 		publics[i] = pub
 	}
 
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := 0; i < n; i++ {
-		dkg, err := NewDistKeyGenerator(suite, privates[i], publics, newTotal)
+		dkg, err := NewDistKeyGenerator(suite, privates[i], publics, newTotal, reader)
 		if err != nil {
 			panic(err)
 		}
@@ -624,6 +632,7 @@ func TestDKGResharing(t *testing.T) {
 	// start resharing within the same group
 	newDkgs := make([]*DistKeyGenerator, len(dkgs))
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := range dkgs {
 		c := &Config{
 			Suite:        suite,
@@ -632,6 +641,7 @@ func TestDKGResharing(t *testing.T) {
 			NewNodes:     publics,
 			Share:        shares[i],
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		newDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -682,6 +692,7 @@ func TestDKGResharingRemoveNode(t *testing.T) {
 	// start resharing within the same group
 	newDkgs := make([]*DistKeyGenerator, len(dkgs))
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := range dkgs {
 		c := &Config{
 			Suite:        suite,
@@ -690,6 +701,7 @@ func TestDKGResharingRemoveNode(t *testing.T) {
 			NewNodes:     publics[:newN],
 			Share:        shares[i],
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		newDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -753,6 +765,7 @@ func TestDKGResharingNewNodesThreshold(t *testing.T) {
 	oldDkgs := make([]*DistKeyGenerator, oldN)
 	newDkgs := make([]*DistKeyGenerator, newN)
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := 0; i < oldN; i++ {
 		c := &Config{
 			Suite:        suite,
@@ -762,6 +775,7 @@ func TestDKGResharingNewNodesThreshold(t *testing.T) {
 			Share:        shares[i],
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		oldDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -781,6 +795,7 @@ func TestDKGResharingNewNodesThreshold(t *testing.T) {
 			PublicCoeffs: shares[0].Commits,
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		newDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -921,6 +936,7 @@ func TestDKGResharingNewNodes(t *testing.T) {
 	oldDkgs := make([]*DistKeyGenerator, oldN)
 	newDkgs := make([]*DistKeyGenerator, newN)
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := 0; i < oldN; i++ {
 		c := &Config{
 			Suite:        suite,
@@ -930,6 +946,7 @@ func TestDKGResharingNewNodes(t *testing.T) {
 			Share:        shares[i],
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		oldDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -959,6 +976,7 @@ func TestDKGResharingNewNodes(t *testing.T) {
 			PublicCoeffs: shares[0].Commits,
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		newDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -1105,6 +1123,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 	// creating all dkgs
 	totalDkgs := make([]*DistKeyGenerator, total)
 	var err error
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	for i := 0; i < oldN; i++ {
 		c := &Config{
 			Suite:        suite,
@@ -1114,6 +1133,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 			Share:        shares[i],
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		totalDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -1143,6 +1163,7 @@ func TestDKGResharingPartialNewNodes(t *testing.T) {
 			PublicCoeffs: shares[0].Commits,
 			Threshold:    newT,
 			OldThreshold: oldT,
+			Reader:       reader,
 		}
 		totalDkgs[i], err = NewDistKeyHandler(c)
 		require.NoError(t, err)
@@ -1261,30 +1282,29 @@ func TestReaderMixedEntropy(t *testing.T) {
 }
 
 func TestUserOnlyFlagTrueBehavior(t *testing.T) {
-	seed := "String to test reproducibility with"
 	partPubs, partSec, _ := generate(defaultN, defaultT)
 	long := partSec[0]
 
-	r1 := strings.NewReader(seed)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
 	c1 := &Config{
 		Suite:          suite,
 		Longterm:       long,
 		NewNodes:       partPubs,
 		Threshold:      defaultT,
-		Reader:         r1,
+		Reader:         reader,
 		UserReaderOnly: true,
 	}
 	dkg1, err := NewDistKeyHandler(c1)
 	require.Nil(t, err)
 	require.NotNil(t, dkg1.dealer)
 
-	r2 := strings.NewReader(seed)
+	reader1 := frand.NewCustom([]byte(SEED), 32, 20)
 	c2 := &Config{
 		Suite:          suite,
 		Longterm:       long,
 		NewNodes:       partPubs,
 		Threshold:      defaultT,
-		Reader:         r2,
+		Reader:         reader1,
 		UserReaderOnly: true,
 	}
 	dkg2, err := NewDistKeyHandler(c2)

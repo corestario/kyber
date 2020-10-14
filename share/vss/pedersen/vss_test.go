@@ -1,15 +1,17 @@
 package vss
 
 import (
+	"github.com/corestario/kyber/util/random"
+	"lukechampine.com/frand"
 	"math/rand"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/group/edwards25519"
 	"github.com/corestario/kyber/sign/schnorr"
 	"github.com/corestario/kyber/xof/blake2xb"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.dedis.ch/protobuf"
 )
 
@@ -28,6 +30,8 @@ var dealerPub kyber.Point
 var dealerSec kyber.Scalar
 
 var secret kyber.Scalar
+
+const SEED = "somestandart_seed_with_32_length"
 
 func init() {
 	verifiersSec, verifiersPub = genCommits(nbVerifiers)
@@ -88,12 +92,13 @@ func TestVSSWhole(t *testing.T) {
 
 func TestVSSDealerNew(t *testing.T) {
 	goodT := MinimumT(nbVerifiers)
-	dealer, err := NewDealer(suite, dealerSec, secret, verifiersPub, goodT)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
+	dealer, err := NewDealer(suite, dealerSec, secret, verifiersPub, goodT, random.New(reader))
 	require.NoError(t, err)
 	require.NotNil(t, dealer.secretPoly)
 
 	for _, badT := range []int{0, 1, -4} {
-		_, err = NewDealer(suite, dealerSec, secret, verifiersPub, badT)
+		_, err = NewDealer(suite, dealerSec, secret, verifiersPub, badT, random.New(reader))
 		assert.Error(t, err)
 	}
 
@@ -531,7 +536,8 @@ func TestVSSAggregatorAddComplaint(t *testing.T) {
 }
 
 func TestVSSSessionID(t *testing.T) {
-	dealer, _ := NewDealer(suite, dealerSec, secret, verifiersPub, vssThreshold)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
+	dealer, _ := NewDealer(suite, dealerSec, secret, verifiersPub, vssThreshold, random.New(reader))
 	commitments := dealer.deals[0].Commitments
 	sid, err := sessionID(suite, dealerPub, verifiersPub, commitments, dealer.t)
 	assert.NoError(t, err)
@@ -585,7 +591,8 @@ func genCommits(n int) ([]kyber.Scalar, []kyber.Point) {
 }
 
 func genDealer() *Dealer {
-	d, _ := NewDealer(suite, dealerSec, secret, verifiersPub, vssThreshold)
+	reader := frand.NewCustom([]byte(SEED), 32, 20)
+	d, _ := NewDealer(suite, dealerSec, secret, verifiersPub, vssThreshold, random.New(reader))
 	return d
 }
 

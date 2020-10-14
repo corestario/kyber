@@ -1,6 +1,7 @@
 package tbls
 
 import (
+	"github.com/corestario/kyber/pairing"
 	"testing"
 
 	curve "github.com/corestario/kyber/pairing/bls12381"
@@ -9,10 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const SEED = "somestandart_seed_with_32_length"
+
 func TestTBLS(test *testing.T) {
 	var err error
 	msg := []byte("Hello threshold Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	n := 10
 	t := n/2 + 1
 	secret := suite.G2().Scalar().Pick(suite.RandomStream())
@@ -33,7 +36,7 @@ func TestTBLS(test *testing.T) {
 func TestTBLSFail(test *testing.T) {
 	var err error
 	msg := []byte("Hello threshold Boneh-Lynn-Shacham")
-	suite := curve.NewBLS12381Suite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	n := 10
 	t := n/2 + 1
 	secret := suite.G2().Scalar().Pick(suite.RandomStream())
