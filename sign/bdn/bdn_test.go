@@ -4,21 +4,23 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/corestario/kyber"
 	"github.com/corestario/kyber/pairing"
-	"github.com/corestario/kyber/pairing/bn256"
+	curve "github.com/corestario/kyber/pairing/bls12381"
 	"github.com/corestario/kyber/sign"
 	"github.com/corestario/kyber/sign/bls"
 	"github.com/corestario/kyber/util/random"
+	"github.com/stretchr/testify/require"
 )
 
-var suite = pairing.NewSuiteBn256()
+const SEED = "somestandart_seed_with_32_length"
+
+var suite = curve.NewBLS12381Suite([]byte(SEED))
 var two = suite.Scalar().Add(suite.Scalar().One(), suite.Scalar().One())
 var three = suite.Scalar().Add(two, suite.Scalar().One())
 
 // Reference test for other languages
-func TestBDN_HashPointToR_BN256(t *testing.T) {
+func TestBDN_HashPointToR_BLS12381(t *testing.T) {
 	p1 := suite.Point().Base()
 	p2 := suite.Point().Mul(two, suite.Point().Base())
 	p3 := suite.Point().Mul(three, suite.Point().Base())
@@ -26,28 +28,28 @@ func TestBDN_HashPointToR_BN256(t *testing.T) {
 	coefs, err := hashPointToR([]kyber.Point{p1, p2, p3})
 
 	require.NoError(t, err)
-	require.Equal(t, "35b5b395f58aba3b192fb7e1e5f2abd3", coefs[0].String())
-	require.Equal(t, "14dcc79d46b09b93075266e47cd4b19e", coefs[1].String())
-	require.Equal(t, "933f6013eb3f654f9489d6d45ad04eaf", coefs[2].String())
+	require.Equal(t, "1ad6a4986b95997561882f038ff08bd6", coefs[0].String())
+	require.Equal(t, "a067df38969dce8d54a4d9f35ac504a0", coefs[1].String())
+	require.Equal(t, "1607c6dcb5e0c6dbee30b1a2edb61a1c", coefs[2].String())
 	require.Equal(t, 16, coefs[0].MarshalSize())
 
-	mask, _ := sign.NewMask(suite, []kyber.Point{p1, p2, p3}, nil)
+	mask, _ := sign.NewMask(suite.(pairing.Suite), []kyber.Point{p1, p2, p3}, nil)
 	mask.SetBit(0, true)
 	mask.SetBit(1, true)
 	mask.SetBit(2, true)
 
-	agg, err := AggregatePublicKeys(suite, mask)
+	agg, err := AggregatePublicKeys(suite.((pairing.Suite)), mask)
 	require.NoError(t, err)
 
 	buf, err := agg.MarshalBinary()
 	require.NoError(t, err)
-	ref := "1432ef60379c6549f7e0dbaf289cb45487c9d7da91fc20648f319a9fbebb23164abea76cdf7b1a3d20d539d9fe096b1d6fb3ee31bf1d426cd4a0d09d603b09f55f473fde972aa27aa991c249e890c1e4a678d470592dd09782d0fb3774834f0b2e20074a49870f039848a6b1aff95e1a1f8170163c77098e1f3530744d1826ce"
+	ref := "823c2c5e536dc393bec982c57a7c4c070a508aa23d673466553486d918a7288ba80368854174dcda90d700754ef9d84b"
 	require.Equal(t, ref, fmt.Sprintf("%x", buf))
 }
 
 func TestBDN_AggregateSignatures(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	sig1, err := Sign(suite, private1, msg)
@@ -82,7 +84,7 @@ func TestBDN_AggregateSignatures(t *testing.T) {
 
 func TestBDN_SubsetSignature(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	_, public3 := NewKeyPair(suite, random.New())
@@ -109,7 +111,7 @@ func TestBDN_SubsetSignature(t *testing.T) {
 
 func TestBDN_RogueAttack(t *testing.T) {
 	msg := []byte("Hello Boneh-Lynn-Shacham")
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	// honest
 	_, public1 := NewKeyPair(suite, random.New())
 	// attacker
@@ -137,7 +139,7 @@ func TestBDN_RogueAttack(t *testing.T) {
 }
 
 func Benchmark_BDN_AggregateSigs(b *testing.B) {
-	suite := bn256.NewSuite()
+	suite := curve.NewBLS12381Suite([]byte(SEED)).(pairing.Suite)
 	private1, public1 := NewKeyPair(suite, random.New())
 	private2, public2 := NewKeyPair(suite, random.New())
 	msg := []byte("Hello many times Boneh-Lynn-Shacham")
