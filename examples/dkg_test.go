@@ -257,6 +257,7 @@ func Test_Example_DKG(t *testing.T) {
 			Share:        share,
 			Threshold:    n,
 			OldThreshold: n,
+			Reader: reader,
 		}
 		newDkg, err := dkg.NewDistKeyHandler(c)
 		require.NoError(t, err)
