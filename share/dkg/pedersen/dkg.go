@@ -7,6 +7,7 @@
 // implemented in "Verifiable Secret Redistribution for Threshold Signing
 // Schemes", by T. Wong et
 // al.(https://www.cs.cmu.edu/~wing/publications/Wong-Wing02b.pdf)
+// For an example how to use it please have a look at examples/dkg_test.go
 package dkg
 
 import (
@@ -134,7 +135,7 @@ type DistKeyGenerator struct {
 // NewDistKeyHandler takes a Config and returns a DistKeyGenerator that is able
 // to drive the DKG or resharing protocol.
 func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
-	if c.NewNodes == nil && c.OldNodes == nil {
+	if len(c.NewNodes) == 0 && len(c.OldNodes) == 0 {
 		return nil, errors.New("dkg: can't run with empty node list")
 	}
 
@@ -143,7 +144,7 @@ func NewDistKeyHandler(c *Config) (*DistKeyGenerator, error) {
 		isResharing = true
 	}
 	if isResharing {
-		if c.OldNodes == nil {
+		if len(c.OldNodes) == 0 {
 			return nil, errors.New("dkg: resharing config needs old nodes list")
 		}
 		if c.OldThreshold == 0 {
