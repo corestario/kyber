@@ -15,6 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// Note: if you are looking for a complete scenario that shows DKG in action
+// please have a look at examples/dkg_test.go
+
 var suite = edwards25519.NewBlakeSHA256Ed25519()
 
 const defaultN = 5
@@ -62,6 +65,9 @@ func TestDKGNewDistKeyGenerator(t *testing.T) {
 	sec, _ := genPair()
 	_, err = NewDistKeyGenerator(suite, sec, partPubs, defaultT, reader)
 	require.Error(t, err)
+
+	_, err = NewDistKeyGenerator(suite, sec, []kyber.Point{}, defaultT, reader)
+	require.EqualError(t, err, "dkg: can't run with empty node list")
 }
 
 func TestDKGDeal(t *testing.T) {
